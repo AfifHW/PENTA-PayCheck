@@ -8,7 +8,7 @@
     <style>
         /* Mobile app container styling */
         body {
-            background-color: #e5e7eb; /* Gray background for desktop viewing */
+            background-color: #e5e7eb;
         }
         .app-container {
             max-w-md;
@@ -19,13 +19,13 @@
         }
         /* Custom styles for input fields */
         .input-field {
-            background-color: #fef2f2; /* Light red background */
-            border-color: #fca5a5; /* Red border */
+            background-color: #fef2f2;
+            border-color: #fca5a5;
             transition: all 0.2s;
         }
         .input-field:focus {
             background-color: #ffffff;
-            border-color: #ef4444; /* Strong red focus */
+            border-color: #ef4444;
             box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
             outline: none;
         }
@@ -46,7 +46,6 @@
         #desktop-blocker {
             display: none;
         }
-        /* Jika layar terlalu lebar (layar PC/Laptop) */
         @media (min-width: 768px) {
             body > *:not(#desktop-blocker) {
                 display: none !important;
@@ -55,11 +54,17 @@
                 display: flex !important;
             }
         }
+
+        /* Hold Button styling to prevent mobile scrolling while touching */
+        .touch-none-btn {
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
     </style>
 </head>
 <body class="text-gray-800 font-sans antialiased overflow-hidden privacy-mode">
 
-    <!-- Desktop Blocker Overlay -->
     <div id="desktop-blocker" class="fixed inset-0 z-[9999] bg-gray-900 flex-col items-center justify-center p-8 text-center">
         <div class="bg-red-900 p-4 rounded-full mb-6">
             <svg class="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8V7a4 4 0 00-8 0v4h8z"></path></svg>
@@ -71,54 +76,52 @@
         </p>
     </div>
 
-    <!-- Privacy Warning Overlay (Splash Screen) -->
     <div id="privacy-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-95 p-5 backdrop-blur-sm">
         <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl text-center border-t-4 border-red-600 animate-fade-in-up">
             <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
                 <svg class="h-8 w-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                 </svg>
             </div>
             <h2 class="text-xl font-bold text-gray-900 mb-2">Peringatan Privasi!</h2>
-            <p class="text-sm text-gray-600 mb-6 leading-relaxed">
-                Informasi gaji bersifat <strong>sangat rahasia</strong>. <br><br>
-                Harap pastikan Anda <strong>tidak membuka</strong> aplikasi ini di tempat umum atau di mana layar Anda bisa terlihat oleh rekan kerja lain guna mencegah hal-hal yang tidak diinginkan.
-            </p>
-            <button onclick="dismissWarning()" class="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-3 px-4 rounded-xl shadow-md transition duration-200 active:scale-95">
-                Saya Mengerti & Lanjutkan
-            </button>
+            <div class="text-sm text-gray-600 mb-6 leading-relaxed bg-red-50 p-3 rounded-lg border border-red-100">
+                <p class="mb-2">Informasi gaji bersifat <strong>sangat rahasia</strong>.</p>
+                <p class="text-red-700 font-medium animate-pulse">Sambil menahan tombol di bawah, mohon perhatikan area kiri, kanan, dan belakang Anda.</p>
+                <p class="mt-2 text-xs">Pastikan tidak ada rekan kerja yang bisa melihat layar Anda.</p>
+            </div>
+            
+            <div class="relative w-full h-14 bg-gray-200 rounded-xl overflow-hidden touch-none-btn cursor-pointer" id="hold-btn-container">
+                <div id="hold-progress" class="absolute top-0 left-0 h-full bg-red-600 w-0 transition-all duration-75 ease-linear"></div>
+                <div class="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+                    <span id="hold-text" class="font-bold text-gray-600 transition-colors duration-200 text-sm">Tahan 5 Detik untuk Masuk</span>
+                </div>
+            </div>
+            <p id="hold-hint" class="text-[10px] text-gray-400 mt-2 h-3 transition-opacity">Lepaskan jari untuk membatalkan</p>
         </div>
     </div>
 
-    <!-- Mobile App Container -->
     <div class="w-full max-w-md mx-auto bg-gray-50 min-h-screen shadow-2xl relative flex flex-col">
         
-        <!-- Header -->
         <header class="bg-red-700 text-white shadow-md rounded-b-xl z-10 sticky top-0">
             <div class="px-5 py-4 flex justify-between items-center">
                 <div>
                     <h1 class="text-xl font-bold flex items-center gap-2">
-                        <!-- Custom Red Icon -->
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
                         PENTA Paychecker
                     </h1>
                     <p class="text-red-100 text-xs mt-1">Cek Hitungan Gaji & Lembur</p>
                 </div>
                 
-                <!-- Privacy Toggle Button -->
                 <button onclick="togglePrivacy()" class="p-2 rounded-full bg-red-800 hover:bg-red-900 transition flex items-center justify-center" aria-label="Toggle Privacy">
-                    <!-- Mata Terbuka -->
                     <svg id="icon-eye-open" class="w-5 h-5 text-red-100 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                    <!-- Mata Tertutup / Silang (Default aktif) -->
                     <svg id="icon-eye-closed" class="w-5 h-5 text-red-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.02 10.02 0 01-4.132 5.411m0 0L21 21"></path></svg>
                 </button>
             </div>
         </header>
 
-        <!-- Main Content -->
         <main class="flex-1 px-4 py-5 space-y-6 pb-24">
             
-            <!-- Section 1: Pendapatan -->
             <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
                 <h2 class="text-sm font-bold text-red-700 mb-3 border-b border-red-100 pb-2">1. Komponen Pendapatan</h2>
                 <div class="space-y-3">
@@ -146,7 +149,6 @@
                 </div>
             </div>
 
-            <!-- Section 2: Lembur -->
             <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
                 <div class="flex justify-between items-end border-b border-red-100 pb-2 mb-3">
                     <h2 class="text-sm font-bold text-red-700">2. Data Lembur</h2>
@@ -157,7 +159,6 @@
                 </div>
                 
                 <div class="space-y-3">
-                    <!-- Weekdays -->
                     <div class="flex items-center gap-2 bg-gray-50 p-2.5 rounded-lg border border-gray-100">
                         <div class="w-1/2">
                             <span class="block text-xs font-medium text-gray-700">Lembur Biasa</span>
@@ -168,8 +169,6 @@
                             <span class="absolute right-3 top-2.5 text-gray-500 text-xs">Jam</span>
                         </div>
                     </div>
-
-                    <!-- Sabtu -->
                     <div class="flex items-center gap-2 bg-gray-50 p-2.5 rounded-lg border border-gray-100">
                         <div class="w-1/2">
                             <span class="block text-xs font-medium text-gray-700">Lembur Sabtu</span>
@@ -180,8 +179,6 @@
                             <span class="absolute right-3 top-2.5 text-gray-500 text-xs">Jam</span>
                         </div>
                     </div>
-
-                    <!-- Minggu -->
                     <div class="flex items-center gap-2 bg-gray-50 p-2.5 rounded-lg border border-gray-100">
                         <div class="w-1/2">
                             <span class="block text-xs font-medium text-gray-700">Lembur Minggu</span>
@@ -195,7 +192,6 @@
                 </div>
             </div>
 
-            <!-- Section 3: Potongan -->
             <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
                 <h2 class="text-sm font-bold text-red-700 mb-3 border-b border-red-100 pb-2">3. Potongan</h2>
                 <div>
@@ -207,7 +203,6 @@
                 </div>
             </div>
 
-            <!-- Section 4: Validasi Transfer -->
             <div class="bg-red-50 p-4 rounded-xl shadow-inner border border-red-200">
                 <h2 class="text-sm font-bold text-red-800 mb-2 flex items-center gap-1">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -220,7 +215,6 @@
                 </div>
             </div>
 
-            <!-- HASIL / RINGKASAN -->
             <div class="bg-gray-800 text-white p-5 rounded-xl shadow-lg mt-4">
                 <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 text-center">Hasil Perhitungan</h3>
                 
@@ -244,7 +238,6 @@
                     <span class="text-2xl font-bold text-white" id="outTHP">Rp 0</span>
                 </div>
 
-                <!-- Komparasi -->
                 <div id="statusContainer" class="p-3 rounded-lg bg-gray-700 border border-gray-600">
                     <div class="flex justify-between items-center mb-1">
                         <span class="text-xs text-gray-300">Gaji Ditransfer:</span>
@@ -261,36 +254,125 @@
             </div>
 
             <div class="pt-4 flex gap-3">
-                <button onclick="resetData()" class="w-full bg-white text-gray-600 font-semibold py-3 px-4 border border-gray-300 rounded-xl shadow-sm text-sm active:bg-gray-100 transition">
+                <button onclick="requestReset()" class="w-full bg-white text-gray-600 font-semibold py-3 px-4 border border-gray-300 rounded-xl shadow-sm text-sm active:bg-gray-100 transition">
                     Reset Data
                 </button>
+            </div>
+
+            <div class="mt-8 text-center pb-2">
+                <p class="text-xs text-gray-400">&copy; Copyright by AfifHW</p>
             </div>
 
         </main>
     </div>
 
     <script>
-        // Dismiss Warning Logic
+        // --- 5 SECOND HOLD LOGIC ---
+        let holdTimer;
+        let progressInterval;
+        let holdTime = 0;
+        const requiredHoldTime = 5000; // 5 detik
+        
+        const btnContainer = document.getElementById('hold-btn-container');
+        const progressBar = document.getElementById('hold-progress');
+        const holdText = document.getElementById('hold-text');
+        const overlay = document.getElementById('privacy-overlay');
+
+        function startHold(e) {
+            e.preventDefault(); // Mencegah teks ter-select atau menu HP muncul
+            holdTime = 0;
+            progressBar.style.width = '0%';
+            holdText.classList.remove('text-gray-600');
+            holdText.classList.add('text-white');
+            
+            progressInterval = setInterval(() => {
+                holdTime += 50;
+                let percentage = (holdTime / requiredHoldTime) * 100;
+                progressBar.style.width = percentage + '%';
+                
+                if (holdTime >= requiredHoldTime) {
+                    clearInterval(progressInterval);
+                    dismissWarning();
+                }
+            }, 50);
+        }
+
+        function cancelHold() {
+            clearInterval(progressInterval);
+            if (holdTime < requiredHoldTime && holdTime > 0) {
+                holdTime = 0;
+                progressBar.style.width = '0%';
+                holdText.classList.remove('text-white');
+                holdText.classList.add('text-gray-600');
+            }
+        }
+
+        // Listener untuk sentuhan HP dan klik Mouse
+        btnContainer.addEventListener('mousedown', startHold);
+        btnContainer.addEventListener('touchstart', startHold);
+        btnContainer.addEventListener('mouseup', cancelHold);
+        btnContainer.addEventListener('mouseleave', cancelHold);
+        btnContainer.addEventListener('touchend', cancelHold);
+
         function dismissWarning() {
-            const overlay = document.getElementById('privacy-overlay');
             overlay.style.opacity = '0';
             overlay.style.transition = 'opacity 0.3s ease';
-            
             setTimeout(() => {
                 overlay.style.display = 'none';
-                document.body.classList.remove('overflow-hidden'); // Allow scrolling again
+                document.body.classList.remove('overflow-hidden');
             }, 300);
         }
 
-        // Constants (Fixed Multipliers)
+
+        // --- AUTO RESET & AUTO LOCK LOGIC (VISIBILITY CHANGE) ---
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                // Jika aplikasi di-minimize, pindah tab, atau layar mati
+                silentClearData(); 
+                lockAppAgain();
+            }
+        });
+
+        function silentClearData() {
+            els.gp.value = '0';
+            els.tp.value = '0';
+            els.tk.value = '0';
+            els.jk.value = '173';
+            els.lwdJam.value = '0';
+            els.lsabJam.value = '0';
+            els.lminJam.value = '0';
+            els.pot.value = '0';
+            els.gd.value = '0';
+            calculate();
+            window.scrollTo(0,0);
+        }
+
+        function lockAppAgain() {
+            // Aktifkan kembali layar penutup privasi
+            overlay.style.display = 'flex';
+            setTimeout(() => {
+                overlay.style.opacity = '1';
+            }, 10);
+            document.body.classList.add('overflow-hidden');
+            
+            // Kembalikan tombol hold ke posisi awal
+            holdTime = 0;
+            progressBar.style.width = '0%';
+            holdText.classList.remove('text-white');
+            holdText.classList.add('text-gray-600');
+
+            // Set privacy ke default (ON)
+            if(!isPrivacyOn) togglePrivacy();
+        }
+
+
+        // --- CONSTANTS & CALCULATION LOGIC ---
         const MULT_WD = 1.5;
         const MULT_SABTU = 2.0;
         const MULT_MINGGU = 3.0;
         
-        // Privacy State (Diubah menjadi TRUE secara bawaan)
         let isPrivacyOn = true;
 
-        // Formatter Rupiah for outputs
         const formatter = new Intl.NumberFormat('id-ID', {
             style: 'currency',
             currency: 'IDR',
@@ -298,21 +380,16 @@
             maximumFractionDigits: 0 
         });
 
-        // Thousands separator for inputs
         function formatNumberWithDots(numberStr) {
-            // Remove non-digit characters
             let val = numberStr.replace(/\D/g, '');
-            // Add dots
             return val.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         }
 
-        // Parse dotted string back to number
         function parseDottedNumber(str) {
             if (!str) return 0;
             return parseFloat(str.replace(/\./g, '')) || 0;
         }
 
-        // DOM Elements - Inputs
         const els = {
             gp: document.getElementById('gajiPokok'),
             tp: document.getElementById('tunjanganPokok'),
@@ -325,7 +402,6 @@
             gd: document.getElementById('gajiDiterima')
         };
 
-        // DOM Elements - Outputs
         const outs = {
             totPendapatan: document.getElementById('outTotalPendapatan'),
             totalLembur: document.getElementById('outTotalLembur'),
@@ -337,37 +413,25 @@
             statusContainer: document.getElementById('statusContainer')
         };
 
-        // Setup Event Listeners for Currency Inputs (Thousands Separator)
         const currencyInputs = [els.gp, els.tp, els.tk, els.pot, els.gd];
         currencyInputs.forEach(input => {
             input.addEventListener('input', function(e) {
-                // Save cursor position
                 let cursorPosition = this.selectionStart;
                 let oldLength = this.value.length;
-                
-                // Format value
                 this.value = formatNumberWithDots(this.value);
-                
-                // Adjust cursor position
                 let newLength = this.value.length;
                 cursorPosition = cursorPosition + (newLength - oldLength);
                 this.setSelectionRange(cursorPosition, cursorPosition);
-                
-                calculate(); // Trigger calculation
+                calculate();
             });
-            
-            // Format 0 on focus out if empty
             input.addEventListener('blur', function() {
                 if(this.value === '') this.value = '0';
             });
-            
-            // Clear 0 on focus
             input.addEventListener('focus', function() {
                 if(this.value === '0') this.value = '';
             });
         });
 
-        // Setup clear on focus for hours
         [els.lwdJam, els.lsabJam, els.lminJam].forEach(input => {
             input.addEventListener('focus', function() {
                 if(this.value === '0') this.value = '';
@@ -377,22 +441,16 @@
             });
         });
 
-        // Strict Mobile Device Verification (JS Guard)
-        // Mengecek apakah perangkat adalah Mobile OS
+        // Desktop Blocker
         const isMobileOS = /Mobi|Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        
         if (!isMobileOS) {
             document.getElementById('desktop-blocker').style.display = 'flex';
-            // Menyembunyikan seluruh elemen lain
             const allOtherElements = document.querySelectorAll('body > *:not(#desktop-blocker)');
             allOtherElements.forEach(el => el.style.display = 'none');
         }
 
-        // Setup clear on focus for hours
-        // Toggle Privacy Logic
         function togglePrivacy() {
             isPrivacyOn = !isPrivacyOn;
-            
             const eyeOpen = document.getElementById('icon-eye-open');
             const eyeClosed = document.getElementById('icon-eye-closed');
             
@@ -405,25 +463,21 @@
                 eyeOpen.classList.remove('hidden');
                 eyeClosed.classList.add('hidden');
             }
-            
-            calculate(); // Recalculate to apply masks on text
+            calculate();
         }
 
-        // Main Calculation Logic
         function calculate() {
-            // 1. Get raw values (parse from dotted strings)
             const gpVal = parseDottedNumber(els.gp.value);
             const tpVal = parseDottedNumber(els.tp.value);
             const tkVal = parseDottedNumber(els.tk.value);
             const potVal = parseDottedNumber(els.pot.value);
             const gdVal = parseDottedNumber(els.gd.value);
             
-            const jkVal = parseFloat(els.jk.value) || 1; // Prevent div by 0
+            const jkVal = parseFloat(els.jk.value) || 1; 
             const lwdJ = parseFloat(els.lwdJam.value) || 0;
             const lsbJ = parseFloat(els.lsabJam.value) || 0;
             const lmnJ = parseFloat(els.lminJam.value) || 0;
 
-            // 2. Calculations
             const totalPendapatanDasar = gpVal + tpVal + tkVal;
             const upahLemburPerJam = (gpVal + tpVal) / jkVal;
             
@@ -432,7 +486,6 @@
 
             const takeHomePay = totalPendapatanDasar + totalUangLembur - potVal;
 
-            // 3. Update UI Outputs (dengan masking jika Privacy On)
             const mask = 'Rp •••••••';
             
             outs.totPendapatan.innerText = isPrivacyOn ? mask : formatter.format(totalPendapatanDasar);
@@ -440,12 +493,10 @@
             outs.pot.innerText = isPrivacyOn ? '- ' + mask : '- ' + formatter.format(potVal);
             outs.thp.innerText = isPrivacyOn ? mask : formatter.format(takeHomePay);
 
-            // 4. Update UI Komparasi
             const selisih = takeHomePay - gdVal;
             outs.gd.innerText = isPrivacyOn ? mask : formatter.format(gdVal);
             outs.selisih.innerText = isPrivacyOn ? mask : formatter.format(Math.abs(selisih));
 
-            // Evaluasi Status (Status tetap terlihat walau Privacy On)
             if (gdVal === 0) {
                 outs.statusContainer.className = "p-3 rounded-lg bg-gray-700 border border-gray-600";
                 outs.statusText.innerText = "BELUM DICEK";
@@ -466,24 +517,12 @@
             }
         }
 
-        // Reset
-        function resetData() {
+        function requestReset() {
             if(confirm('Hapus semua isian?')) {
-                els.gp.value = '0';
-                els.tp.value = '0';
-                els.tk.value = '0';
-                els.jk.value = '173';
-                els.lwdJam.value = '0';
-                els.lsabJam.value = '0';
-                els.lminJam.value = '0';
-                els.pot.value = '0';
-                els.gd.value = '0';
-                calculate();
-                window.scrollTo(0,0);
+                silentClearData();
             }
         }
 
-        // Init
         calculate();
 
     </script>
