@@ -25,15 +25,20 @@
         }
         .animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
         #desktop-blocker { display: none; }
+        
+        /* [FITUR BLOKIR PC DIMATIKAN SEMENTARA UNTUK TESTING] 
         @media (min-width: 768px) {
             body > *:not(#desktop-blocker) { display: none !important; }
             #desktop-blocker { display: flex !important; }
         }
+        */
+        
         .touch-none-btn { touch-action: none; -webkit-user-select: none; user-select: none; }
     </style>
 </head>
 <body class="text-gray-800 font-sans antialiased overflow-hidden privacy-mode">
 
+    <!-- Desktop Blocker Overlay -->
     <div id="desktop-blocker" class="fixed inset-0 z-[9999] bg-gray-900 flex-col items-center justify-center p-8 text-center">
         <div class="bg-red-900 p-4 rounded-full mb-6">
             <svg class="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8V7a4 4 0 00-8 0v4h8z"></path></svg>
@@ -45,6 +50,7 @@
         </p>
     </div>
 
+    <!-- Privacy Warning Overlay -->
     <div id="privacy-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-95 p-5 backdrop-blur-sm">
         <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl text-center border-t-4 border-red-600 animate-fade-in-up">
             <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
@@ -69,6 +75,7 @@
         </div>
     </div>
 
+    <!-- Mobile App Container -->
     <div class="w-full max-w-md mx-auto bg-gray-50 min-h-screen shadow-2xl relative flex flex-col">
         
         <header class="bg-red-700 text-white shadow-md rounded-b-xl z-10 sticky top-0">
@@ -78,7 +85,7 @@
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
                         PENTA Paychecker
                     </h1>
-                    <p class="text-red-100 text-xs mt-1">Cek Hitungan Gaji & Lembur</p>
+                    <p class="text-red-100 text-[10px] mt-1">Sistem Kalkulasi V2.2</p>
                 </div>
                 
                 <button onclick="togglePrivacy()" class="p-2 rounded-full bg-red-800 hover:bg-red-900 transition flex items-center justify-center">
@@ -88,8 +95,9 @@
             </div>
         </header>
 
-        <main class="flex-1 px-4 py-5 space-y-6 pb-24">
+        <main class="flex-1 px-4 py-5 space-y-5 pb-24">
             
+            <!-- Pendapatan -->
             <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
                 <h2 class="text-sm font-bold text-red-700 mb-3 border-b border-red-100 pb-2">1. Komponen Pendapatan</h2>
                 <div class="space-y-3">
@@ -117,50 +125,106 @@
                 </div>
             </div>
 
+            <!-- Potongan Telat -->
             <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
                 <div class="flex justify-between items-end border-b border-red-100 pb-2 mb-3">
-                    <h2 class="text-sm font-bold text-red-700">2. Data Lembur</h2>
-                    <div class="w-24">
-                        <label class="block text-[10px] font-medium text-gray-500 mb-1 leading-tight">Pembagi Jam</label>
-                        <input type="number" id="jamKerja" class="input-field w-full px-2 py-1.5 border rounded-lg text-xs text-center font-bold" value="173" min="1" oninput="calculate()">
+                    <h2 class="text-sm font-bold text-red-700">2. Potongan Keterlambatan</h2>
+                    <div class="flex items-center gap-2 bg-red-50 px-2 py-1.5 rounded-lg border border-red-200">
+                        <label class="block text-[10px] font-bold text-red-800 leading-tight text-right">Hari Kerja<br>(Bulan)</label>
+                        <input type="number" id="hariKerja" class="w-16 px-1 py-1 bg-white border border-red-300 rounded text-sm text-center font-bold focus:outline-none focus:border-red-500 shadow-inner text-red-700" value="22" min="1" oninput="calculate()">
                     </div>
                 </div>
                 <div class="space-y-3">
-                    <div class="flex items-center gap-2 bg-gray-50 p-2.5 rounded-lg border border-gray-100">
+                    <div class="flex gap-3">
                         <div class="w-1/2">
-                            <span class="block text-xs font-medium text-gray-700">Lembur Biasa</span>
-                            <span class="text-[10px] text-gray-400">Weekdays (x 1.5)</span>
+                            <label class="block text-[10px] font-medium text-gray-500 mb-1">Jml Telat (Kali/Hari)</label>
+                            <input type="number" id="jmlTelat" class="input-field w-full px-3 py-2 border rounded-lg text-sm font-semibold text-center" value="0" min="0" step="0.5" oninput="calculate()">
                         </div>
-                        <div class="w-1/2 relative">
-                            <input type="number" id="lemburWdJam" class="input-field w-full px-3 py-2 border rounded-lg text-sm font-semibold text-right pr-10" value="0" step="0.1" min="0" oninput="calculate()">
-                            <span class="absolute right-3 top-2.5 text-gray-500 text-xs">Jam</span>
+                        <div class="w-1/2">
+                            <label class="block text-[10px] font-medium text-gray-500 mb-1">Potongan per Telat</label>
+                            <div class="relative">
+                                <span class="absolute left-2 top-2.5 text-gray-400 text-[10px] font-medium">Rp</span>
+                                <input type="text" id="potPerTelat" class="w-full pl-7 pr-2 py-2 border rounded-lg text-sm font-semibold bg-gray-100 text-gray-500 outline-none" value="0" readonly tabindex="-1">
+                            </div>
                         </div>
                     </div>
+                    <div class="bg-red-50 p-2 rounded flex justify-between items-center text-xs border border-red-100">
+                        <span class="text-red-800">Total Potongan Telat:</span>
+                        <span id="outTotalPotTelat" class="font-bold text-red-700">Rp 0</span>
+                    </div>
+                    <p class="text-[9px] text-gray-400 italic mt-1 leading-tight">*Dihitung otomatis: (Tunjangan Pokok ÷ 2) ÷ Hari Kerja. Mengurangi dasar upah lembur.</p>
+                </div>
+            </div>
+
+            <!-- Lembur -->
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                <div class="flex justify-between items-center border-b border-red-100 pb-2 mb-3">
+                    <h2 class="text-sm font-bold text-red-700">3. Data Lembur</h2>
+                    
+                    <div class="flex items-center gap-2 bg-red-50 px-2 py-1.5 rounded-lg border border-red-200">
+                        <label class="block text-[10px] font-bold text-red-800 leading-tight text-right">Jam Kerja<br>(Pembagi)</label>
+                        <input type="number" id="jamKerja" class="w-16 px-1 py-1 bg-white border border-red-300 rounded text-sm text-center font-bold focus:outline-none focus:border-red-500 shadow-inner text-red-700" value="160" min="1" oninput="calculate()">
+                    </div>
+                </div>
+                
+                <div class="space-y-3">
+                    <!-- Weekdays -->
                     <div class="flex items-center gap-2 bg-gray-50 p-2.5 rounded-lg border border-gray-100">
-                        <div class="w-1/2">
-                            <span class="block text-xs font-medium text-gray-700">Lembur Sabtu</span>
-                            <span class="text-[10px] text-gray-400">Libur biasa (x 2)</span>
+                        <div class="w-2/5">
+                            <span class="block text-[11px] font-medium text-gray-700 leading-tight">Lembur Biasa</span>
+                            <span class="text-[9px] text-gray-400">Weekdays (x 1.5)</span>
                         </div>
-                        <div class="w-1/2 relative">
-                            <input type="number" id="lemburSabtuJam" class="input-field w-full px-3 py-2 border rounded-lg text-sm font-semibold text-right pr-10" value="0" step="0.1" min="0" oninput="calculate()">
-                            <span class="absolute right-3 top-2.5 text-gray-500 text-xs">Jam</span>
+                        <div class="w-3/5 flex gap-1">
+                            <div class="relative w-1/2">
+                                <input type="number" id="lwdJam" class="input-field w-full pl-1 pr-6 py-2 border rounded-lg text-sm font-semibold text-center" value="0" min="0" oninput="calculate()">
+                                <span class="absolute right-1.5 top-2.5 text-gray-400 text-[9px]">Jam</span>
+                            </div>
+                            <div class="relative w-1/2">
+                                <input type="number" id="lwdMenit" class="input-field w-full pl-1 pr-6 py-2 border rounded-lg text-sm font-semibold text-center" value="0" min="0" max="59" oninput="calculate()">
+                                <span class="absolute right-1.5 top-2.5 text-gray-400 text-[9px]">Mnt</span>
+                            </div>
                         </div>
                     </div>
+                    <!-- Sabtu -->
                     <div class="flex items-center gap-2 bg-gray-50 p-2.5 rounded-lg border border-gray-100">
-                        <div class="w-1/2">
-                            <span class="block text-xs font-medium text-gray-700">Lembur Minggu</span>
-                            <span class="text-[10px] text-gray-400">Libur resmi (x 3)</span>
+                        <div class="w-2/5">
+                            <span class="block text-[11px] font-medium text-gray-700 leading-tight">Lembur Sabtu</span>
+                            <span class="text-[9px] text-gray-400">Libur biasa (x 2)</span>
                         </div>
-                        <div class="w-1/2 relative">
-                            <input type="number" id="lemburMingguJam" class="input-field w-full px-3 py-2 border rounded-lg text-sm font-semibold text-right pr-10" value="0" step="0.1" min="0" oninput="calculate()">
-                            <span class="absolute right-3 top-2.5 text-gray-500 text-xs">Jam</span>
+                        <div class="w-3/5 flex gap-1">
+                            <div class="relative w-1/2">
+                                <input type="number" id="lsabJam" class="input-field w-full pl-1 pr-6 py-2 border rounded-lg text-sm font-semibold text-center" value="0" min="0" oninput="calculate()">
+                                <span class="absolute right-1.5 top-2.5 text-gray-400 text-[9px]">Jam</span>
+                            </div>
+                            <div class="relative w-1/2">
+                                <input type="number" id="lsabMenit" class="input-field w-full pl-1 pr-6 py-2 border rounded-lg text-sm font-semibold text-center" value="0" min="0" max="59" oninput="calculate()">
+                                <span class="absolute right-1.5 top-2.5 text-gray-400 text-[9px]">Mnt</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Minggu -->
+                    <div class="flex items-center gap-2 bg-gray-50 p-2.5 rounded-lg border border-gray-100">
+                        <div class="w-2/5">
+                            <span class="block text-[11px] font-medium text-gray-700 leading-tight">Lembur Minggu</span>
+                            <span class="text-[9px] text-gray-400">Libur resmi (x 3)</span>
+                        </div>
+                        <div class="w-3/5 flex gap-1">
+                            <div class="relative w-1/2">
+                                <input type="number" id="lminJam" class="input-field w-full pl-1 pr-6 py-2 border rounded-lg text-sm font-semibold text-center" value="0" min="0" oninput="calculate()">
+                                <span class="absolute right-1.5 top-2.5 text-gray-400 text-[9px]">Jam</span>
+                            </div>
+                            <div class="relative w-1/2">
+                                <input type="number" id="lminMenit" class="input-field w-full pl-1 pr-6 py-2 border rounded-lg text-sm font-semibold text-center" value="0" min="0" max="59" oninput="calculate()">
+                                <span class="absolute right-1.5 top-2.5 text-gray-400 text-[9px]">Mnt</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
+            <!-- Potongan Lainnya -->
             <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-                <h2 class="text-sm font-bold text-red-700 mb-3 border-b border-red-100 pb-2">3. Potongan</h2>
+                <h2 class="text-sm font-bold text-red-700 mb-3 border-b border-red-100 pb-2">4. Potongan BPJS/Lainnya</h2>
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">BPJS / Jamsostek dll</label>
                     <div class="relative">
@@ -170,6 +234,7 @@
                 </div>
             </div>
 
+            <!-- Validasi -->
             <div class="bg-red-50 p-4 rounded-xl shadow-inner border border-red-200">
                 <h2 class="text-sm font-bold text-red-800 mb-2 flex items-center gap-1">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -181,6 +246,7 @@
                 </div>
             </div>
 
+            <!-- Hasil -->
             <div class="bg-gray-800 text-white p-5 rounded-xl shadow-lg mt-4">
                 <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 text-center">Hasil Perhitungan</h3>
                 
@@ -191,10 +257,14 @@
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-300 text-xs">Total Uang Lembur</span>
-                        <span id="outTotalLembur" class="text-red-400 font-medium">Rp 0</span>
+                        <span id="outTotalLembur" class="text-green-400 font-medium">Rp 0</span>
                     </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-300 text-xs">Total Potongan</span>
+                    <div class="flex justify-between text-red-300">
+                        <span class="text-xs">Potongan Telat</span>
+                        <span id="outTotalPotTelatBawah">- Rp 0</span>
+                    </div>
+                    <div class="flex justify-between text-red-300">
+                        <span class="text-xs">Potongan BPJS/Lainnya</span>
                         <span id="outPotongan">- Rp 0</span>
                     </div>
                 </div>
@@ -218,20 +288,28 @@
                     </div>
                 </div>
                 
-                <button id="btn-wa" onclick="sendWA()" class="hidden w-full bg-[#25D366] hover:bg-green-600 text-white font-bold py-3 px-4 rounded-xl shadow-md transition duration-200 mt-4 flex justify-center items-center gap-2 text-sm">
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
-                    Kirim WA Keuangan
-                </button>
+                <!-- Action Buttons (WA & Copy) -->
+                <div id="action-buttons" class="hidden gap-2 mt-4">
+                    <button onclick="copyMessage()" class="w-1/2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-2 rounded-xl shadow-md transition duration-200 flex justify-center items-center gap-1 text-xs">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                        Salin Teks
+                    </button>
+                    <button onclick="sendWA()" class="w-1/2 bg-[#25D366] hover:bg-green-600 text-white font-bold py-3 px-2 rounded-xl shadow-md transition duration-200 flex justify-center items-center gap-1 text-xs">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+                        Kirim WA
+                    </button>
+                </div>
             </div>
 
             <div class="pt-4 flex gap-3">
                 <button onclick="requestReset()" class="w-full bg-white text-gray-600 font-semibold py-3 px-4 border border-gray-300 rounded-xl shadow-sm text-sm active:bg-gray-100 transition">
-                    Bersihkan Layar
+                    Bersihkan Semua Data
                 </button>
             </div>
 
-            <div class="mt-8 text-center pb-2">
-                <p class="text-xs text-gray-400">&copy; Copyright by AfifHW</p>
+            <!-- Toast Copy Notification -->
+            <div id="copy-toast" class="hidden fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs py-2 px-4 rounded-full shadow-lg z-50 transition-opacity">
+                Teks berhasil disalin!
             </div>
 
         </main>
@@ -290,18 +368,23 @@
             }, 300);
         }
 
+        // --- NEW AUTO-PRIVACY LOGIC (Pindah Tab / Tutup Layar) ---
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) {
-                silentClearData(); 
-                lockAppAgain();
+                // Saat user pindah aplikasi, angka otomatis tersensor (tanpa kembali ke awal)
+                if (!isPrivacyOn) {
+                    togglePrivacy();
+                }
             }
         });
 
         function silentClearData() {
-            els.lwdJam.value = '0';
-            els.lsabJam.value = '0';
-            els.lminJam.value = '0';
-            els.gd.value = '0';
+            const allInputs = document.querySelectorAll('input');
+            allInputs.forEach(input => {
+                if(input.id === 'jamKerja') input.value = '160';
+                else if(input.id === 'hariKerja') input.value = '22';
+                else if(input.id !== 'potPerTelat') input.value = '0';
+            });
             calculate();
             window.scrollTo(0,0);
         }
@@ -334,36 +417,39 @@
             return parseFloat(str.replace(/\./g, '')) || 0;
         }
 
+        // DOM Element Registrations
         const els = {
-            gp: document.getElementById('gajiPokok'), tp: document.getElementById('tunjanganPokok'),
-            tk: document.getElementById('tunjanganKhusus'), jk: document.getElementById('jamKerja'),
-            lwdJam: document.getElementById('lemburWdJam'), lsabJam: document.getElementById('lemburSabtuJam'),
-            lminJam: document.getElementById('lemburMingguJam'), pot: document.getElementById('potonganJamsostek'),
+            gp: document.getElementById('gajiPokok'), 
+            tp: document.getElementById('tunjanganPokok'),
+            tk: document.getElementById('tunjanganKhusus'), 
+            
+            hk: document.getElementById('hariKerja'),
+            potPerTelat: document.getElementById('potPerTelat'),
+            jmlTelat: document.getElementById('jmlTelat'),
+
+            jk: document.getElementById('jamKerja'),
+            
+            lwdJam: document.getElementById('lwdJam'), lwdMenit: document.getElementById('lwdMenit'),
+            lsabJam: document.getElementById('lsabJam'), lsabMenit: document.getElementById('lsabMenit'),
+            lminJam: document.getElementById('lminJam'), lminMenit: document.getElementById('lminMenit'),
+            
+            pot: document.getElementById('potonganJamsostek'),
             gd: document.getElementById('gajiDiterima')
         };
 
         const outs = {
-            totPendapatan: document.getElementById('outTotalPendapatan'), totalLembur: document.getElementById('outTotalLembur'),
-            pot: document.getElementById('outPotongan'), thp: document.getElementById('outTHP'),
-            gd: document.getElementById('outGajiDiterima'), selisih: document.getElementById('outSelisih'),
-            statusText: document.getElementById('outStatusText'), statusContainer: document.getElementById('statusContainer')
+            totPotTelatUI: document.getElementById('outTotalPotTelat'),
+            totPotTelatBawah: document.getElementById('outTotalPotTelatBawah'),
+            totPendapatan: document.getElementById('outTotalPendapatan'), 
+            totalLembur: document.getElementById('outTotalLembur'),
+            pot: document.getElementById('outPotongan'), 
+            thp: document.getElementById('outTHP'),
+            gd: document.getElementById('outGajiDiterima'), 
+            selisih: document.getElementById('outSelisih'),
+            statusText: document.getElementById('outStatusText'), 
+            statusContainer: document.getElementById('statusContainer')
         };
-        const btnWa = document.getElementById('btn-wa');
-
-        // LOCAL STORAGE LOGIC
-        function loadSavedData() {
-            if(localStorage.getItem('penta_gp')) els.gp.value = formatNumberWithDots(localStorage.getItem('penta_gp'));
-            if(localStorage.getItem('penta_tp')) els.tp.value = formatNumberWithDots(localStorage.getItem('penta_tp'));
-            if(localStorage.getItem('penta_tk')) els.tk.value = formatNumberWithDots(localStorage.getItem('penta_tk'));
-            if(localStorage.getItem('penta_pot')) els.pot.value = formatNumberWithDots(localStorage.getItem('penta_pot'));
-        }
-
-        function saveDataToLocal() {
-            localStorage.setItem('penta_gp', parseDottedNumber(els.gp.value));
-            localStorage.setItem('penta_tp', parseDottedNumber(els.tp.value));
-            localStorage.setItem('penta_tk', parseDottedNumber(els.tk.value));
-            localStorage.setItem('penta_pot', parseDottedNumber(els.pot.value));
-        }
+        const actionButtons = document.getElementById('action-buttons');
 
         const currencyInputs = [els.gp, els.tp, els.tk, els.pot, els.gd];
         currencyInputs.forEach(input => {
@@ -375,23 +461,26 @@
                 cursorPosition = cursorPosition + (newLength - oldLength);
                 this.setSelectionRange(cursorPosition, cursorPosition);
                 calculate();
-                saveDataToLocal(); // Save on type
             });
             input.addEventListener('blur', function() { if(this.value === '') this.value = '0'; });
             input.addEventListener('focus', function() { if(this.value === '0') this.value = ''; });
         });
 
-        [els.lwdJam, els.lsabJam, els.lminJam].forEach(input => {
+        const hourMinInputs = [els.lwdJam, els.lwdMenit, els.lsabJam, els.lsabMenit, els.lminJam, els.lminMenit, els.jmlTelat, els.hk];
+        hourMinInputs.forEach(input => {
             input.addEventListener('focus', function() { if(this.value === '0') this.value = ''; });
             input.addEventListener('blur', function() { if(this.value === '') this.value = '0'; });
         });
 
+        // [FITUR BLOKIR PC DIMATIKAN SEMENTARA UNTUK TESTING]
+        /*
         const isMobileOS = /Mobi|Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         if (!isMobileOS) {
             document.getElementById('desktop-blocker').style.display = 'flex';
             const allOtherElements = document.querySelectorAll('body > *:not(#desktop-blocker)');
             allOtherElements.forEach(el => el.style.display = 'none');
         }
+        */
 
         function togglePrivacy() {
             isPrivacyOn = !isPrivacyOn;
@@ -407,42 +496,133 @@
             calculate();
         }
 
-        // WA GENERATOR LOGIC
+        function generateMessageText() {
+            const gpVal = parseDottedNumber(els.gp.value);
+            const tpVal = parseDottedNumber(els.tp.value);
+            const tkVal = parseDottedNumber(els.tk.value);
+            const potVal = parseDottedNumber(els.pot.value);
+            const gdVal = parseDottedNumber(els.gd.value);
+            
+            const hkVal = parseFloat(els.hk.value) || 22;
+            const potPerTelat = (tpVal / 2) / hkVal;
+            const jmlTelat = parseFloat(els.jmlTelat.value) || 0;
+            const totalPotTelat = potPerTelat * jmlTelat;
+
+            const jkVal = parseFloat(els.jk.value) || 1; 
+            
+            const lwdJ = (parseFloat(els.lwdJam.value) || 0) + ((parseFloat(els.lwdMenit.value) || 0) / 60);
+            const lsbJ = (parseFloat(els.lsabJam.value) || 0) + ((parseFloat(els.lsabMenit.value) || 0) / 60);
+            const lmnJ = (parseFloat(els.lminJam.value) || 0) + ((parseFloat(els.lminMenit.value) || 0) / 60);
+
+            const upahLemburPerJam = (gpVal + tpVal - totalPotTelat) / jkVal;
+            const totalIndexJam = (lwdJ * MULT_WD) + (lsbJ * MULT_SABTU) + (lmnJ * MULT_MINGGU);
+            const totalUangLembur = totalIndexJam * upahLemburPerJam;
+            
+            const totalPendapatanDasar = gpVal + tpVal + tkVal;
+            const takeHomePay = totalPendapatanDasar + totalUangLembur - totalPotTelat - potVal;
+            const selisih = Math.abs(takeHomePay - gdVal);
+
+            return `Assalamualaikum, Halo, 
+
+izin mau konfirmasi rekap gaji bulan ini ya. Kalo hasil hitungan mandiri ada selisih kurang bayar, seperti catatan ini ya :
+
+*Rincian Variabel Dasar:*
+- Gaji Pokok: ${formatter.format(gpVal)}
+- Tunj. Pokok: ${formatter.format(tpVal)}
+- Tunj. Khusus: ${formatter.format(tkVal)}
+- Hari Kerja: ${hkVal}
+- Potongan Telat: ${formatter.format(totalPotTelat)} (${jmlTelat} kali)
+- Pembagi Lembur: ${jkVal}
+
+*Data Jam Lembur:*
+- L. Biasa: ${els.lwdJam.value}j ${els.lwdMenit.value}m
+- L. Sabtu: ${els.lsabJam.value}j ${els.lsabMenit.value}m
+- L. Minggu: ${els.lminJam.value}j ${els.lminMenit.value}m
+- Estimasi Uang Lembur: ${formatter.format(totalUangLembur)}
+
+*Data Potongan:*
+- BPJS/Lainnya: ${formatter.format(potVal)}
+
+*Ringkasan:*
+Total Seharusnya: ${formatter.format(takeHomePay)}
+Total Ditransfer: ${formatter.format(gdVal)}
+*Selisih: ${formatter.format(selisih)}*
+
+Boleh tolong dibantu cek ya. Thanks!`;
+        }
+
         function sendWA() {
-            const selisihStr = formatter.format(parseDottedNumber(outs.selisih.innerText) || 0);
-            const text = `Halo Tim Keuangan, izin konfirmasi mengenai transfer gaji bulan ini. Berdasarkan hitungan sistem, terdapat selisih kurang bayar sebesar ${selisihStr}. Mohon arahan dan pengecekannya ya. Terima kasih.`;
+            const text = generateMessageText();
             const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
             window.open(waUrl, '_blank');
+        }
+
+        function copyMessage() {
+            const text = generateMessageText();
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                const toast = document.getElementById('copy-toast');
+                toast.classList.remove('hidden');
+                setTimeout(() => { toast.classList.add('hidden'); }, 2000);
+            } catch (err) {
+                alert('Gagal menyalin teks.');
+            }
+            document.body.removeChild(textArea);
         }
 
         function calculate() {
             const gpVal = parseDottedNumber(els.gp.value);
             const tpVal = parseDottedNumber(els.tp.value);
             const tkVal = parseDottedNumber(els.tk.value);
-            const potVal = parseDottedNumber(els.pot.value);
+            
+            const hkVal = parseFloat(els.hk.value) || 22;
+            const potPerTelat = (tpVal / 2) / hkVal;
+            els.potPerTelat.value = isPrivacyOn ? '••••••' : formatNumberWithDots(Math.round(potPerTelat).toString());
+            
+            const jmlTelat = parseFloat(els.jmlTelat.value) || 0;
+            const totalPotTelat = potPerTelat * jmlTelat;
+            
+            const potBPJSVal = parseDottedNumber(els.pot.value);
             const gdVal = parseDottedNumber(els.gd.value);
             const jkVal = parseFloat(els.jk.value) || 1; 
-            const lwdJ = parseFloat(els.lwdJam.value) || 0;
-            const lsbJ = parseFloat(els.lsabJam.value) || 0;
-            const lmnJ = parseFloat(els.lminJam.value) || 0;
+            
+            const lwdJ = (parseFloat(els.lwdJam.value) || 0) + ((parseFloat(els.lwdMenit.value) || 0) / 60);
+            const lsbJ = (parseFloat(els.lsabJam.value) || 0) + ((parseFloat(els.lsabMenit.value) || 0) / 60);
+            const lmnJ = (parseFloat(els.lminJam.value) || 0) + ((parseFloat(els.lminMenit.value) || 0) / 60);
 
             const totalPendapatanDasar = gpVal + tpVal + tkVal;
-            const upahLemburPerJam = (gpVal + tpVal) / jkVal;
+            const upahLemburPerJam = (gpVal + tpVal - totalPotTelat) / jkVal;
+            
             const totalIndexJam = (lwdJ * MULT_WD) + (lsbJ * MULT_SABTU) + (lmnJ * MULT_MINGGU);
             const totalUangLembur = totalIndexJam * upahLemburPerJam;
-            const takeHomePay = totalPendapatanDasar + totalUangLembur - potVal;
+            
+            const takeHomePay = totalPendapatanDasar + totalUangLembur - totalPotTelat - potBPJSVal;
 
             const mask = 'Rp •••••••';
+            
+            outs.totPotTelatUI.innerText = isPrivacyOn ? mask : formatter.format(totalPotTelat);
+            outs.totPotTelatBawah.innerText = isPrivacyOn ? '- ' + mask : '- ' + formatter.format(totalPotTelat);
+            
             outs.totPendapatan.innerText = isPrivacyOn ? mask : formatter.format(totalPendapatanDasar);
             outs.totalLembur.innerText = isPrivacyOn ? mask : formatter.format(totalUangLembur);
-            outs.pot.innerText = isPrivacyOn ? '- ' + mask : '- ' + formatter.format(potVal);
+            outs.pot.innerText = isPrivacyOn ? '- ' + mask : '- ' + formatter.format(potBPJSVal);
             outs.thp.innerText = isPrivacyOn ? mask : formatter.format(takeHomePay);
 
             const selisih = takeHomePay - gdVal;
             outs.gd.innerText = isPrivacyOn ? mask : formatter.format(gdVal);
             outs.selisih.innerText = isPrivacyOn ? mask : formatter.format(Math.abs(selisih));
 
-            btnWa.classList.add('hidden'); // Default sembunyikan tombol WA
+            actionButtons.classList.add('hidden'); 
+            actionButtons.classList.remove('flex');
 
             if (gdVal === 0) {
                 outs.statusContainer.className = "p-3 rounded-lg bg-gray-700 border border-gray-600";
@@ -457,8 +637,8 @@
                 outs.statusContainer.className = "p-3 rounded-lg bg-red-900 border border-red-700";
                 outs.statusText.innerText = "⚠️ KURANG BAYAR";
                 outs.statusText.className = "text-sm font-bold text-red-300";
-                btnWa.classList.remove('hidden'); // Tampilkan WA
-                btnWa.classList.add('flex');
+                actionButtons.classList.remove('hidden'); 
+                actionButtons.classList.add('flex');
             } else {
                 outs.statusContainer.className = "p-3 rounded-lg bg-yellow-600 border border-yellow-500";
                 outs.statusText.innerText = "⚠️ LEBIH BAYAR";
@@ -467,14 +647,12 @@
         }
 
         function requestReset() {
-            if(confirm('Hapus isian lembur dan kunci aplikasi?')) {
+            if(confirm('Hapus isian dan kunci aplikasi?')) {
                 silentClearData();
                 lockAppAgain();
             }
         }
 
-        // Init Load & Calc
-        loadSavedData();
         calculate();
 
     </script>
