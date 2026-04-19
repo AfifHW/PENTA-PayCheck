@@ -4,26 +4,69 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PENTA Paychecker</title>
+    <!-- Menggunakan font Inter untuk tampilan yang lebih modern -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { background-color: #e5e7eb; }
-        .app-container {
-            max-w-md; margin: 0 auto; background-color: #f9fafb;
-            min-height: 100vh; box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        penta: {
+                            50: '#fff1f2', 100: '#ffe4e6', 200: '#fecdd3', 300: '#fda4af',
+                            400: '#fb7185', 500: '#f43f5e', 600: '#e11d48', 700: '#be123c',
+                            800: '#9f1239', 900: '#881337',
+                        }
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+                        'glow': '0 0 20px rgba(225, 29, 72, 0.4)',
+                    }
+                }
+            }
         }
+    </script>
+    <style>
+        body { 
+            background-color: #f3f4f6; 
+            background-image: radial-gradient(#e5e7eb 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .app-container {
+            max-width: 28rem; /* 448px */
+            margin: 0 auto; 
+            background-color: #fafafa;
+            min-height: 100vh; 
+            box-shadow: 0 0 40px rgba(0,0,0,0.08);
+        }
+        
+        /* Modern Input Styling */
         .input-field {
-            background-color: #fef2f2; border-color: #fca5a5; transition: all 0.2s;
+            background-color: rgba(255, 228, 230, 0.3); /* Sangat soft merah */
+            border-color: #fecdd3;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .input-field:focus {
-            background-color: #ffffff; border-color: #ef4444;
-            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2); outline: none;
+            background-color: #ffffff; 
+            border-color: #fb7185;
+            box-shadow: 0 0 0 3px rgba(251, 113, 133, 0.2); 
+            outline: none;
         }
-        .privacy-mode .sensitive-input { -webkit-text-security: disc; }
+        .input-readonly {
+            background-color: #f3f4f6;
+            border-color: #e5e7eb;
+            color: #6b7280;
+        }
+        
+        .privacy-mode .sensitive-input { -webkit-text-security: disc; font-family: text-security-disc; }
+        
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
-        .animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
+        .animate-fade-in-up { animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        
         #desktop-blocker { display: none; }
         
         /* [FITUR BLOKIR PC DIMATIKAN SEMENTARA UNTUK TESTING] 
@@ -34,188 +77,198 @@
         */
         
         .touch-none-btn { touch-action: none; -webkit-user-select: none; user-select: none; }
+
+        /* Custom Scrollbar hide */
+        ::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="text-gray-800 font-sans antialiased overflow-hidden privacy-mode">
 
     <!-- Desktop Blocker Overlay -->
     <div id="desktop-blocker" class="fixed inset-0 z-[9999] bg-gray-900 flex-col items-center justify-center p-8 text-center">
-        <div class="bg-red-900 p-4 rounded-full mb-6">
-            <svg class="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8V7a4 4 0 00-8 0v4h8z"></path></svg>
+        <div class="bg-gradient-to-br from-penta-600 to-penta-800 p-5 rounded-full mb-6 shadow-glow">
+            <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8V7a4 4 0 00-8 0v4h8z"></path></svg>
         </div>
-        <h1 class="text-white text-2xl font-bold mb-3">Akses Ditolak</h1>
+        <h1 class="text-white text-3xl font-extrabold mb-3 tracking-tight">Akses Ditolak</h1>
         <p class="text-gray-400 max-w-md leading-relaxed text-sm">
             Demi menjaga privasi, aplikasi PENTA Paychecker <strong>tidak dapat diakses melalui PC / Laptop</strong>.<br><br>
-            Silakan buka aplikasi ini menggunakan <strong>Smartphone (HP)</strong>.
+            Silakan buka aplikasi ini menggunakan <strong>Smartphone (HP)</strong> Anda.
         </p>
     </div>
 
     <!-- Privacy Warning Overlay -->
-    <div id="privacy-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-95 p-5 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl text-center border-t-4 border-red-600 animate-fade-in-up">
-            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
-                <svg class="h-8 w-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+    <div id="privacy-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/80 p-5 backdrop-blur-md">
+        <div class="bg-white rounded-[2rem] p-7 max-w-sm w-full shadow-2xl text-center border-t-8 border-penta-600 animate-fade-in-up">
+            <div class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-penta-50 mb-5 shadow-inner">
+                <svg class="h-10 w-10 text-penta-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                 </svg>
             </div>
-            <h2 class="text-xl font-bold text-gray-900 mb-2">Peringatan Privasi!</h2>
-            <div class="text-sm text-gray-600 mb-6 leading-relaxed bg-red-50 p-3 rounded-lg border border-red-100">
+            <h2 class="text-2xl font-extrabold text-gray-900 mb-2">Peringatan Privasi</h2>
+            <div class="text-sm text-gray-600 mb-8 leading-relaxed bg-penta-50/50 p-4 rounded-2xl border border-penta-100">
                 <p class="mb-2">Informasi gaji bersifat <strong>sangat rahasia</strong>.</p>
-                <p class="text-red-700 font-medium animate-pulse">Sambil menahan tombol di bawah, mohon perhatikan area sekitar Anda.</p>
+                <p class="text-penta-700 font-semibold animate-pulse">Tahan tombol di bawah ini dan pastikan area sekitar Anda aman.</p>
             </div>
             
-            <div class="relative w-full h-14 bg-gray-200 rounded-xl overflow-hidden touch-none-btn cursor-pointer" id="hold-btn-container">
-                <div id="hold-progress" class="absolute top-0 left-0 h-full bg-red-600 w-0 transition-all duration-75 ease-linear"></div>
+            <div class="relative w-full h-14 bg-gray-100 rounded-2xl overflow-hidden touch-none-btn cursor-pointer shadow-inner border border-gray-200" id="hold-btn-container">
+                <div id="hold-progress" class="absolute top-0 left-0 h-full bg-gradient-to-r from-penta-500 to-penta-600 w-0 transition-all duration-75 ease-linear"></div>
                 <div class="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-                    <span id="hold-text" class="font-bold text-gray-600 transition-colors duration-200 text-sm">Tahan 5 Detik untuk Masuk</span>
+                    <span id="hold-text" class="font-bold text-gray-500 transition-colors duration-200 text-sm tracking-wide">Tahan 5 Detik untuk Masuk</span>
                 </div>
             </div>
-            <p id="hold-hint" class="text-[10px] text-gray-400 mt-2 h-3 transition-opacity">Lepaskan jari untuk membatalkan</p>
+            <p id="hold-hint" class="text-[11px] text-gray-400 mt-3 h-3 transition-opacity font-medium">Lepaskan jari untuk membatalkan</p>
         </div>
     </div>
 
     <!-- Mobile App Container -->
-    <div class="w-full max-w-md mx-auto bg-gray-50 min-h-screen shadow-2xl relative flex flex-col">
+    <div class="app-container relative flex flex-col">
         
-        <header class="bg-red-700 text-white shadow-md rounded-b-xl z-10 sticky top-0">
-            <div class="px-5 py-4 flex justify-between items-center">
+        <!-- Header bergradasi modern -->
+        <header class="bg-gradient-to-br from-penta-700 via-penta-600 to-penta-800 text-white shadow-lg rounded-b-[2rem] z-10 sticky top-0 border-b border-white/10">
+            <div class="px-6 py-5 flex justify-between items-center">
                 <div>
-                    <h1 class="text-xl font-bold flex items-center gap-2">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-                        PENTA Paychecker
+                    <h1 class="text-2xl font-extrabold flex items-center gap-2 tracking-tight">
+                        <svg class="w-7 h-7 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                        Paychecker
                     </h1>
-                    <p class="text-red-100 text-[10px] mt-1">Sistem Kalkulasi V2.2</p>
                 </div>
                 
-                <button onclick="togglePrivacy()" class="p-2 rounded-full bg-red-800 hover:bg-red-900 transition flex items-center justify-center">
-                    <svg id="icon-eye-open" class="w-5 h-5 text-red-100 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                    <svg id="icon-eye-closed" class="w-5 h-5 text-red-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.02 10.02 0 01-4.132 5.411m0 0L21 21"></path></svg>
+                <button onclick="togglePrivacy()" class="p-2.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all shadow-sm border border-white/10 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-white/50 active:scale-95">
+                    <svg id="icon-eye-open" class="w-5 h-5 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                    <svg id="icon-eye-closed" class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.02 10.02 0 01-4.132 5.411m0 0L21 21"></path></svg>
                 </button>
             </div>
         </header>
 
-        <main class="flex-1 px-4 py-5 space-y-5 pb-24">
+        <main class="flex-1 px-5 py-6 space-y-6 pb-24">
             
             <!-- Pendapatan -->
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-                <h2 class="text-sm font-bold text-red-700 mb-3 border-b border-red-100 pb-2">1. Komponen Pendapatan</h2>
-                <div class="space-y-3">
+            <div class="bg-white p-5 rounded-3xl shadow-soft border border-gray-100">
+                <h2 class="text-sm font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-penta-700 to-penta-500 mb-4 flex items-center gap-2">
+                    <span class="bg-penta-100 text-penta-600 w-6 h-6 rounded-full flex items-center justify-center text-xs">1</span> 
+                    Komponen Pendapatan
+                </h2>
+                <div class="space-y-3.5">
                     <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">Gaji Pokok</label>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1.5 ml-1">Gaji Pokok</label>
                         <div class="relative">
-                            <span class="absolute left-3 top-2.5 text-gray-500 font-medium text-sm">Rp</span>
-                            <input type="text" inputmode="numeric" id="gajiPokok" class="input-field sensitive-input w-full pl-10 pr-3 py-2 border rounded-lg text-sm font-semibold" value="0">
+                            <span class="absolute left-3.5 top-3 text-gray-400 font-bold text-sm">Rp</span>
+                            <input type="text" inputmode="numeric" id="gajiPokok" class="input-field sensitive-input w-full pl-11 pr-4 py-3 rounded-xl text-sm font-bold tracking-wide" value="0">
                         </div>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">Tunjangan Pokok</label>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1.5 ml-1">Tunjangan Pokok</label>
                         <div class="relative">
-                            <span class="absolute left-3 top-2.5 text-gray-500 font-medium text-sm">Rp</span>
-                            <input type="text" inputmode="numeric" id="tunjanganPokok" class="input-field sensitive-input w-full pl-10 pr-3 py-2 border rounded-lg text-sm font-semibold" value="0">
+                            <span class="absolute left-3.5 top-3 text-gray-400 font-bold text-sm">Rp</span>
+                            <input type="text" inputmode="numeric" id="tunjanganPokok" class="input-field sensitive-input w-full pl-11 pr-4 py-3 rounded-xl text-sm font-bold tracking-wide" value="0">
                         </div>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">Tunj. Khusus</label>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1.5 ml-1">Tunj. Khusus</label>
                         <div class="relative">
-                            <span class="absolute left-3 top-2.5 text-gray-500 font-medium text-sm">Rp</span>
-                            <input type="text" inputmode="numeric" id="tunjanganKhusus" class="input-field sensitive-input w-full pl-10 pr-3 py-2 border rounded-lg text-sm font-semibold" value="0">
+                            <span class="absolute left-3.5 top-3 text-gray-400 font-bold text-sm">Rp</span>
+                            <input type="text" inputmode="numeric" id="tunjanganKhusus" class="input-field sensitive-input w-full pl-11 pr-4 py-3 rounded-xl text-sm font-bold tracking-wide" value="0">
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Potongan Telat -->
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-                <div class="flex justify-between items-end border-b border-red-100 pb-2 mb-3">
-                    <h2 class="text-sm font-bold text-red-700">2. Potongan Keterlambatan</h2>
-                    <div class="flex items-center gap-2 bg-red-50 px-2 py-1.5 rounded-lg border border-red-200">
-                        <label class="block text-[10px] font-bold text-red-800 leading-tight text-right">Hari Kerja<br>(Bulan)</label>
-                        <input type="number" id="hariKerja" class="w-16 px-1 py-1 bg-white border border-red-300 rounded text-sm text-center font-bold focus:outline-none focus:border-red-500 shadow-inner text-red-700" value="22" min="1" oninput="calculate()">
+            <div class="bg-white p-5 rounded-3xl shadow-soft border border-gray-100">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-sm font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-penta-700 to-penta-500 flex items-center gap-2">
+                        <span class="bg-penta-100 text-penta-600 w-6 h-6 rounded-full flex items-center justify-center text-xs">2</span> 
+                        Potongan Telat
+                    </h2>
+                    <div class="flex items-center gap-2 bg-penta-50 px-2.5 py-1.5 rounded-xl border border-penta-100">
+                        <label class="block text-[10px] font-bold text-penta-800 leading-tight text-right">Hari Kerja<br>(Bulan)</label>
+                        <input type="number" id="hariKerja" class="w-14 px-1 py-1 bg-white border border-penta-200 rounded-lg text-sm text-center font-bold focus:outline-none focus:border-penta-500 shadow-sm text-penta-700" value="22" min="1" oninput="calculate()">
                     </div>
                 </div>
-                <div class="space-y-3">
+                <div class="space-y-4">
                     <div class="flex gap-3">
                         <div class="w-1/2">
-                            <label class="block text-[10px] font-medium text-gray-500 mb-1">Jml Telat (Kali/Hari)</label>
-                            <input type="number" id="jmlTelat" class="input-field w-full px-3 py-2 border rounded-lg text-sm font-semibold text-center" value="0" min="0" step="0.5" oninput="calculate()">
+                            <label class="block text-xs font-semibold text-gray-600 mb-1.5 ml-1">Jml Telat (Kali)</label>
+                            <input type="number" id="jmlTelat" class="input-field w-full px-4 py-3 border rounded-xl text-sm font-bold text-center tracking-wide" value="0" min="0" step="0.5" oninput="calculate()">
                         </div>
                         <div class="w-1/2">
-                            <label class="block text-[10px] font-medium text-gray-500 mb-1">Potongan per Telat</label>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1.5 ml-1">Pot. per Telat</label>
                             <div class="relative">
-                                <span class="absolute left-2 top-2.5 text-gray-400 text-[10px] font-medium">Rp</span>
-                                <input type="text" id="potPerTelat" class="w-full pl-7 pr-2 py-2 border rounded-lg text-sm font-semibold bg-gray-100 text-gray-500 outline-none" value="0" readonly tabindex="-1">
+                                <span class="absolute left-3 top-3 text-gray-400 text-xs font-bold">Rp</span>
+                                <input type="text" id="potPerTelat" class="input-readonly w-full pl-8 pr-2 py-3 border rounded-xl text-sm font-bold outline-none tracking-wide" value="0" readonly tabindex="-1">
                             </div>
                         </div>
                     </div>
-                    <div class="bg-red-50 p-2 rounded flex justify-between items-center text-xs border border-red-100">
-                        <span class="text-red-800">Total Potongan Telat:</span>
-                        <span id="outTotalPotTelat" class="font-bold text-red-700">Rp 0</span>
+                    <div class="bg-gradient-to-r from-penta-50 to-white p-3 rounded-xl flex justify-between items-center text-xs border border-penta-100 shadow-sm">
+                        <span class="text-penta-800 font-semibold">Total Potongan Telat:</span>
+                        <span id="outTotalPotTelat" class="font-extrabold text-penta-700 text-sm">Rp 0</span>
                     </div>
-                    <p class="text-[9px] text-gray-400 italic mt-1 leading-tight">*Dihitung otomatis: (Tunjangan Pokok ÷ 2) ÷ Hari Kerja. Mengurangi dasar upah lembur.</p>
                 </div>
             </div>
 
             <!-- Lembur -->
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-                <div class="flex justify-between items-center border-b border-red-100 pb-2 mb-3">
-                    <h2 class="text-sm font-bold text-red-700">3. Data Lembur</h2>
-                    
-                    <div class="flex items-center gap-2 bg-red-50 px-2 py-1.5 rounded-lg border border-red-200">
-                        <label class="block text-[10px] font-bold text-red-800 leading-tight text-right">Jam Kerja<br>(Pembagi)</label>
-                        <input type="number" id="jamKerja" class="w-16 px-1 py-1 bg-white border border-red-300 rounded text-sm text-center font-bold focus:outline-none focus:border-red-500 shadow-inner text-red-700" value="160" min="1" oninput="calculate()">
+            <div class="bg-white p-5 rounded-3xl shadow-soft border border-gray-100">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-sm font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-penta-700 to-penta-500 flex items-center gap-2">
+                        <span class="bg-penta-100 text-penta-600 w-6 h-6 rounded-full flex items-center justify-center text-xs">3</span> 
+                        Data Lembur
+                    </h2>
+                    <div class="flex items-center gap-2 bg-penta-50 px-2.5 py-1.5 rounded-xl border border-penta-100">
+                        <label class="block text-[10px] font-bold text-penta-800 leading-tight text-right">Pembagi<br>Lembur</label>
+                        <input type="number" id="jamKerja" class="w-14 px-1 py-1 bg-white border border-penta-200 rounded-lg text-sm text-center font-bold focus:outline-none focus:border-penta-500 shadow-sm text-penta-700" value="160" min="1" oninput="calculate()">
                     </div>
                 </div>
                 
                 <div class="space-y-3">
                     <!-- Weekdays -->
-                    <div class="flex items-center gap-2 bg-gray-50 p-2.5 rounded-lg border border-gray-100">
-                        <div class="w-2/5">
-                            <span class="block text-[11px] font-medium text-gray-700 leading-tight">Lembur Biasa</span>
-                            <span class="text-[9px] text-gray-400">Weekdays (x 1.5)</span>
+                    <div class="flex items-center gap-3 bg-gray-50/80 p-3 rounded-2xl border border-gray-100 hover:border-penta-200 transition-colors">
+                        <div class="w-[45%]">
+                            <span class="block text-xs font-bold text-gray-700 leading-tight">Lembur Biasa</span>
+                            <span class="text-[10px] font-semibold text-penta-600">Weekdays (x1.5)</span>
                         </div>
-                        <div class="w-3/5 flex gap-1">
+                        <div class="w-[55%] flex gap-2">
                             <div class="relative w-1/2">
-                                <input type="number" id="lwdJam" class="input-field w-full pl-1 pr-6 py-2 border rounded-lg text-sm font-semibold text-center" value="0" min="0" oninput="calculate()">
-                                <span class="absolute right-1.5 top-2.5 text-gray-400 text-[9px]">Jam</span>
+                                <input type="number" id="lwdJam" class="input-field w-full pl-2 pr-7 py-2.5 rounded-xl text-sm font-bold text-center" value="0" min="0" oninput="calculate()">
+                                <span class="absolute right-2 top-3 text-gray-400 text-[10px] font-bold">J</span>
                             </div>
                             <div class="relative w-1/2">
-                                <input type="number" id="lwdMenit" class="input-field w-full pl-1 pr-6 py-2 border rounded-lg text-sm font-semibold text-center" value="0" min="0" max="59" oninput="calculate()">
-                                <span class="absolute right-1.5 top-2.5 text-gray-400 text-[9px]">Mnt</span>
+                                <input type="number" id="lwdMenit" class="input-field w-full pl-2 pr-7 py-2.5 rounded-xl text-sm font-bold text-center" value="0" min="0" max="59" oninput="calculate()">
+                                <span class="absolute right-2 top-3 text-gray-400 text-[10px] font-bold">M</span>
                             </div>
                         </div>
                     </div>
                     <!-- Sabtu -->
-                    <div class="flex items-center gap-2 bg-gray-50 p-2.5 rounded-lg border border-gray-100">
-                        <div class="w-2/5">
-                            <span class="block text-[11px] font-medium text-gray-700 leading-tight">Lembur Sabtu</span>
-                            <span class="text-[9px] text-gray-400">Libur biasa (x 2)</span>
+                    <div class="flex items-center gap-3 bg-gray-50/80 p-3 rounded-2xl border border-gray-100 hover:border-penta-200 transition-colors">
+                        <div class="w-[45%]">
+                            <span class="block text-xs font-bold text-gray-700 leading-tight">Lembur Sabtu</span>
+                            <span class="text-[10px] font-semibold text-penta-600">Libur (x2.0)</span>
                         </div>
-                        <div class="w-3/5 flex gap-1">
+                        <div class="w-[55%] flex gap-2">
                             <div class="relative w-1/2">
-                                <input type="number" id="lsabJam" class="input-field w-full pl-1 pr-6 py-2 border rounded-lg text-sm font-semibold text-center" value="0" min="0" oninput="calculate()">
-                                <span class="absolute right-1.5 top-2.5 text-gray-400 text-[9px]">Jam</span>
+                                <input type="number" id="lsabJam" class="input-field w-full pl-2 pr-7 py-2.5 rounded-xl text-sm font-bold text-center" value="0" min="0" oninput="calculate()">
+                                <span class="absolute right-2 top-3 text-gray-400 text-[10px] font-bold">J</span>
                             </div>
                             <div class="relative w-1/2">
-                                <input type="number" id="lsabMenit" class="input-field w-full pl-1 pr-6 py-2 border rounded-lg text-sm font-semibold text-center" value="0" min="0" max="59" oninput="calculate()">
-                                <span class="absolute right-1.5 top-2.5 text-gray-400 text-[9px]">Mnt</span>
+                                <input type="number" id="lsabMenit" class="input-field w-full pl-2 pr-7 py-2.5 rounded-xl text-sm font-bold text-center" value="0" min="0" max="59" oninput="calculate()">
+                                <span class="absolute right-2 top-3 text-gray-400 text-[10px] font-bold">M</span>
                             </div>
                         </div>
                     </div>
                     <!-- Minggu -->
-                    <div class="flex items-center gap-2 bg-gray-50 p-2.5 rounded-lg border border-gray-100">
-                        <div class="w-2/5">
-                            <span class="block text-[11px] font-medium text-gray-700 leading-tight">Lembur Minggu</span>
-                            <span class="text-[9px] text-gray-400">Libur resmi (x 3)</span>
+                    <div class="flex items-center gap-3 bg-gray-50/80 p-3 rounded-2xl border border-gray-100 hover:border-penta-200 transition-colors">
+                        <div class="w-[45%]">
+                            <span class="block text-xs font-bold text-gray-700 leading-tight">Lembur Minggu</span>
+                            <span class="text-[10px] font-semibold text-penta-600">Libur (x3.0)</span>
                         </div>
-                        <div class="w-3/5 flex gap-1">
+                        <div class="w-[55%] flex gap-2">
                             <div class="relative w-1/2">
-                                <input type="number" id="lminJam" class="input-field w-full pl-1 pr-6 py-2 border rounded-lg text-sm font-semibold text-center" value="0" min="0" oninput="calculate()">
-                                <span class="absolute right-1.5 top-2.5 text-gray-400 text-[9px]">Jam</span>
+                                <input type="number" id="lminJam" class="input-field w-full pl-2 pr-7 py-2.5 rounded-xl text-sm font-bold text-center" value="0" min="0" oninput="calculate()">
+                                <span class="absolute right-2 top-3 text-gray-400 text-[10px] font-bold">J</span>
                             </div>
                             <div class="relative w-1/2">
-                                <input type="number" id="lminMenit" class="input-field w-full pl-1 pr-6 py-2 border rounded-lg text-sm font-semibold text-center" value="0" min="0" max="59" oninput="calculate()">
-                                <span class="absolute right-1.5 top-2.5 text-gray-400 text-[9px]">Mnt</span>
+                                <input type="number" id="lminMenit" class="input-field w-full pl-2 pr-7 py-2.5 rounded-xl text-sm font-bold text-center" value="0" min="0" max="59" oninput="calculate()">
+                                <span class="absolute right-2 top-3 text-gray-400 text-[10px] font-bold">M</span>
                             </div>
                         </div>
                     </div>
@@ -223,93 +276,101 @@
             </div>
 
             <!-- Potongan Lainnya -->
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-                <h2 class="text-sm font-bold text-red-700 mb-3 border-b border-red-100 pb-2">4. Potongan BPJS/Lainnya</h2>
+            <div class="bg-white p-5 rounded-3xl shadow-soft border border-gray-100">
+                <h2 class="text-sm font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-penta-700 to-penta-500 mb-4 flex items-center gap-2">
+                    <span class="bg-penta-100 text-penta-600 w-6 h-6 rounded-full flex items-center justify-center text-xs">4</span> 
+                    Potongan BPJS / Lainnya
+                </h2>
                 <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">BPJS / Jamsostek dll</label>
                     <div class="relative">
-                        <span class="absolute left-3 top-2.5 text-gray-500 font-medium text-sm">Rp</span>
-                        <input type="text" inputmode="numeric" id="potonganJamsostek" class="input-field sensitive-input w-full pl-10 pr-3 py-2 border rounded-lg text-sm font-semibold text-red-600" value="0">
+                        <span class="absolute left-3.5 top-3 text-gray-400 font-bold text-sm">Rp</span>
+                        <input type="text" inputmode="numeric" id="potonganJamsostek" class="input-field sensitive-input w-full pl-11 pr-4 py-3 border rounded-xl text-sm font-bold text-penta-600 tracking-wide" value="0">
                     </div>
                 </div>
             </div>
 
             <!-- Validasi -->
-            <div class="bg-red-50 p-4 rounded-xl shadow-inner border border-red-200">
-                <h2 class="text-sm font-bold text-red-800 mb-2 flex items-center gap-1">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    Validasi Pembayaran
+            <div class="bg-gradient-to-br from-penta-50 to-white p-5 rounded-3xl shadow-soft border border-penta-200 relative overflow-hidden">
+                <!-- Decorative element -->
+                <div class="absolute -right-4 -top-4 w-20 h-20 bg-penta-100 rounded-full blur-xl opacity-60"></div>
+                
+                <h2 class="text-sm font-extrabold text-penta-800 mb-3 flex items-center gap-2 relative z-10">
+                    <svg class="w-5 h-5 text-penta-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Nominal Ditransfer (Bank)
                 </h2>
-                <div class="relative">
-                    <span class="absolute left-3 top-2.5 text-red-700 font-bold text-sm">Rp</span>
-                    <input type="text" inputmode="numeric" id="gajiDiterima" class="input-field sensitive-input w-full pl-10 pr-3 py-2 border-red-300 rounded-lg text-sm font-bold text-red-700" value="0">
+                <div class="relative z-10">
+                    <span class="absolute left-3.5 top-3.5 text-penta-700 font-extrabold text-sm">Rp</span>
+                    <input type="text" inputmode="numeric" id="gajiDiterima" class="w-full pl-11 pr-4 py-3.5 bg-white border-2 border-penta-200 rounded-xl text-base font-extrabold text-penta-800 shadow-sm focus:outline-none focus:border-penta-400 focus:ring-4 focus:ring-penta-100 transition-all tracking-wide sensitive-input" value="0" placeholder="0">
                 </div>
             </div>
 
-            <!-- Hasil -->
-            <div class="bg-gray-800 text-white p-5 rounded-xl shadow-lg mt-4">
-                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 text-center">Hasil Perhitungan</h3>
+            <!-- Hasil / Dark Card Premium -->
+            <div class="bg-gradient-to-br from-gray-900 via-[#1a1c23] to-black text-white p-6 rounded-[2rem] shadow-2xl mt-6 border border-gray-800 relative overflow-hidden">
+                <!-- Glowing Orb Background -->
+                <div class="absolute -top-12 -right-12 w-40 h-40 bg-penta-600 rounded-full mix-blend-screen filter blur-[40px] opacity-30 pointer-events-none"></div>
                 
-                <div class="space-y-1 text-sm border-b border-gray-600 pb-3 mb-3">
-                    <div class="flex justify-between">
-                        <span class="text-gray-300 text-xs">Total Pendapatan</span>
-                        <span id="outTotalPendapatan">Rp 0</span>
+                <h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-4 text-center">Rekapitulasi Sistem</h3>
+                
+                <div class="space-y-2 text-sm border-b border-gray-800 pb-4 mb-4 relative z-10">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400 font-medium">Total Pendapatan</span>
+                        <span id="outTotalPendapatan" class="font-semibold">Rp 0</span>
                     </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-300 text-xs">Total Uang Lembur</span>
-                        <span id="outTotalLembur" class="text-green-400 font-medium">Rp 0</span>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400 font-medium">Total Uang Lembur</span>
+                        <span id="outTotalLembur" class="text-emerald-400 font-bold">Rp 0</span>
                     </div>
-                    <div class="flex justify-between text-red-300">
-                        <span class="text-xs">Potongan Telat</span>
-                        <span id="outTotalPotTelatBawah">- Rp 0</span>
+                    <div class="flex justify-between items-center text-rose-300/80">
+                        <span class="font-medium">Potongan Telat</span>
+                        <span id="outTotalPotTelatBawah" class="font-semibold">- Rp 0</span>
                     </div>
-                    <div class="flex justify-between text-red-300">
-                        <span class="text-xs">Potongan BPJS/Lainnya</span>
-                        <span id="outPotongan">- Rp 0</span>
+                    <div class="flex justify-between items-center text-rose-300/80">
+                        <span class="font-medium">Potongan BPJS</span>
+                        <span id="outPotongan" class="font-semibold">- Rp 0</span>
                     </div>
                 </div>
 
-                <div class="text-center mb-4">
-                    <span class="block text-[10px] text-gray-400 uppercase mb-1">Gaji Seharusnya (THP)</span>
-                    <span class="text-2xl font-bold text-white" id="outTHP">Rp 0</span>
+                <div class="text-center mb-6 relative z-10">
+                    <span class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Take Home Pay Seharusnya</span>
+                    <span class="text-3xl font-extrabold text-white tracking-tight drop-shadow-md" id="outTHP">Rp 0</span>
                 </div>
 
-                <div id="statusContainer" class="p-3 rounded-lg bg-gray-700 border border-gray-600">
-                    <div class="flex justify-between items-center mb-1">
-                        <span class="text-xs text-gray-300">Ditransfer:</span>
-                        <span class="text-sm font-bold" id="outGajiDiterima">Rp 0</span>
+                <div id="statusContainer" class="p-4 rounded-2xl bg-gray-800/50 border border-gray-700 backdrop-blur-sm relative z-10 transition-colors duration-300">
+                    <div class="flex justify-between items-center mb-1.5">
+                        <span class="text-xs text-gray-400 font-medium">Ditransfer Bank:</span>
+                        <span class="text-sm font-extrabold text-white" id="outGajiDiterima">Rp 0</span>
                     </div>
-                    <div class="flex justify-between items-center border-b border-gray-500 border-dashed pb-2 mb-2">
-                        <span class="text-xs text-gray-300">Selisih:</span>
-                        <span class="text-sm font-bold" id="outSelisih">Rp 0</span>
+                    <div class="flex justify-between items-center border-b border-gray-600 border-dashed pb-3 mb-3">
+                        <span class="text-xs text-gray-400 font-medium">Selisih:</span>
+                        <span class="text-sm font-extrabold text-white" id="outSelisih">Rp 0</span>
                     </div>
                     <div class="text-center">
-                        <span class="text-sm font-bold text-gray-400" id="outStatusText">BELUM DICEK</span>
+                        <span class="text-sm font-extrabold text-gray-400 tracking-wide" id="outStatusText">BELUM DICEK</span>
                     </div>
                 </div>
                 
                 <!-- Action Buttons (WA & Copy) -->
-                <div id="action-buttons" class="hidden gap-2 mt-4">
-                    <button onclick="copyMessage()" class="w-1/2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-2 rounded-xl shadow-md transition duration-200 flex justify-center items-center gap-1 text-xs">
+                <div id="action-buttons" class="hidden gap-3 mt-5 relative z-10">
+                    <button onclick="copyMessage()" class="flex-1 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold py-3.5 px-2 rounded-xl transition duration-200 flex justify-center items-center gap-1.5 text-xs backdrop-blur-md active:scale-95">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
                         Salin Teks
                     </button>
-                    <button onclick="sendWA()" class="w-1/2 bg-[#25D366] hover:bg-green-600 text-white font-bold py-3 px-2 rounded-xl shadow-md transition duration-200 flex justify-center items-center gap-1 text-xs">
+                    <button onclick="sendWA()" class="flex-1 bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:from-[#1da851] hover:to-[#0f7569] text-white font-bold py-3.5 px-2 rounded-xl shadow-[0_0_15px_rgba(37,211,102,0.4)] transition duration-200 flex justify-center items-center gap-1.5 text-xs active:scale-95">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
                         Kirim WA
                     </button>
                 </div>
             </div>
 
-            <div class="pt-4 flex gap-3">
-                <button onclick="requestReset()" class="w-full bg-white text-gray-600 font-semibold py-3 px-4 border border-gray-300 rounded-xl shadow-sm text-sm active:bg-gray-100 transition">
-                    Bersihkan Semua Data
+            <div class="pt-6 pb-2">
+                <button onclick="requestReset()" class="w-full bg-white text-penta-600 font-bold py-3.5 px-4 border border-penta-200 rounded-2xl shadow-sm text-sm hover:bg-penta-50 active:scale-95 transition-all">
+                    Reset & Kunci Layar
                 </button>
             </div>
 
             <!-- Toast Copy Notification -->
-            <div id="copy-toast" class="hidden fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs py-2 px-4 rounded-full shadow-lg z-50 transition-opacity">
-                Teks berhasil disalin!
+            <div id="copy-toast" class="hidden fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-gray-900/90 backdrop-blur-md border border-gray-700 text-white text-xs font-semibold py-3 px-6 rounded-full shadow-2xl z-50 transition-opacity">
+                ✅ Teks berhasil disalin!
             </div>
 
         </main>
@@ -330,7 +391,7 @@
             e.preventDefault(); 
             holdTime = 0;
             progressBar.style.width = '0%';
-            holdText.classList.remove('text-gray-600');
+            holdText.classList.remove('text-gray-500');
             holdText.classList.add('text-white');
             progressInterval = setInterval(() => {
                 holdTime += 50;
@@ -349,7 +410,7 @@
                 holdTime = 0;
                 progressBar.style.width = '0%';
                 holdText.classList.remove('text-white');
-                holdText.classList.add('text-gray-600');
+                holdText.classList.add('text-gray-500');
             }
         }
 
@@ -361,17 +422,16 @@
 
         function dismissWarning() {
             overlay.style.opacity = '0';
-            overlay.style.transition = 'opacity 0.3s ease';
+            overlay.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
             setTimeout(() => {
                 overlay.style.display = 'none';
                 document.body.classList.remove('overflow-hidden');
-            }, 300);
+            }, 400);
         }
 
         // --- NEW AUTO-PRIVACY LOGIC (Pindah Tab / Tutup Layar) ---
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) {
-                // Saat user pindah aplikasi, angka otomatis tersensor (tanpa kembali ke awal)
                 if (!isPrivacyOn) {
                     togglePrivacy();
                 }
@@ -386,7 +446,7 @@
                 else if(input.id !== 'potPerTelat') input.value = '0';
             });
             calculate();
-            window.scrollTo(0,0);
+            window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
         function lockAppAgain() {
@@ -396,7 +456,7 @@
             holdTime = 0;
             progressBar.style.width = '0%';
             holdText.classList.remove('text-white');
-            holdText.classList.add('text-gray-600');
+            holdText.classList.add('text-gray-500');
             if(!isPrivacyOn) togglePrivacy();
         }
 
@@ -472,16 +532,6 @@
             input.addEventListener('blur', function() { if(this.value === '') this.value = '0'; });
         });
 
-        // [FITUR BLOKIR PC DIMATIKAN SEMENTARA UNTUK TESTING]
-        /*
-        const isMobileOS = /Mobi|Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        if (!isMobileOS) {
-            document.getElementById('desktop-blocker').style.display = 'flex';
-            const allOtherElements = document.querySelectorAll('body > *:not(#desktop-blocker)');
-            allOtherElements.forEach(el => el.style.display = 'none');
-        }
-        */
-
         function togglePrivacy() {
             isPrivacyOn = !isPrivacyOn;
             const eyeOpen = document.getElementById('icon-eye-open');
@@ -522,33 +572,7 @@
             const takeHomePay = totalPendapatanDasar + totalUangLembur - totalPotTelat - potVal;
             const selisih = Math.abs(takeHomePay - gdVal);
 
-            return `Assalamualaikum, Halo, 
-
-izin mau konfirmasi rekap gaji bulan ini ya. Kalo hasil hitungan mandiri ada selisih kurang bayar, seperti catatan ini ya :
-
-*Rincian Variabel Dasar:*
-- Gaji Pokok: ${formatter.format(gpVal)}
-- Tunj. Pokok: ${formatter.format(tpVal)}
-- Tunj. Khusus: ${formatter.format(tkVal)}
-- Hari Kerja: ${hkVal}
-- Potongan Telat: ${formatter.format(totalPotTelat)} (${jmlTelat} kali)
-- Pembagi Lembur: ${jkVal}
-
-*Data Jam Lembur:*
-- L. Biasa: ${els.lwdJam.value}j ${els.lwdMenit.value}m
-- L. Sabtu: ${els.lsabJam.value}j ${els.lsabMenit.value}m
-- L. Minggu: ${els.lminJam.value}j ${els.lminMenit.value}m
-- Estimasi Uang Lembur: ${formatter.format(totalUangLembur)}
-
-*Data Potongan:*
-- BPJS/Lainnya: ${formatter.format(potVal)}
-
-*Ringkasan:*
-Total Seharusnya: ${formatter.format(takeHomePay)}
-Total Ditransfer: ${formatter.format(gdVal)}
-*Selisih: ${formatter.format(selisih)}*
-
-Boleh tolong dibantu cek ya. Thanks!`;
+            return `Assalamualaikum, Halo, \n\nizin mau konfirmasi rekap gaji bulan ini ya. Kalo hasil hitungan mandiri ada selisih kurang bayar, seperti catatan ini ya :\n\n*Rincian Variabel Dasar:*\n- Gaji Pokok: ${formatter.format(gpVal)}\n- Tunj. Pokok: ${formatter.format(tpVal)}\n- Tunj. Khusus: ${formatter.format(tkVal)}\n- Hari Kerja: ${hkVal}\n- Potongan Telat: ${formatter.format(totalPotTelat)} (${jmlTelat} kali)\n- Pembagi Lembur: ${jkVal}\n\n*Data Jam Lembur:*\n- L. Biasa: ${els.lwdJam.value}j ${els.lwdMenit.value}m\n- L. Sabtu: ${els.lsabJam.value}j ${els.lsabMenit.value}m\n- L. Minggu: ${els.lminJam.value}j ${els.lminMenit.value}m\n- Estimasi Uang Lembur: ${formatter.format(totalUangLembur)}\n\n*Data Potongan:*\n- BPJS/Lainnya: ${formatter.format(potVal)}\n\n*Ringkasan:*\nTotal Seharusnya: ${formatter.format(takeHomePay)}\nTotal Ditransfer: ${formatter.format(gdVal)}\n*Selisih: ${formatter.format(selisih)}*\n\nBoleh tolong dibantu cek ya. Thanks!`;
         }
 
         function sendWA() {
@@ -572,7 +596,7 @@ Boleh tolong dibantu cek ya. Thanks!`;
                 document.execCommand('copy');
                 const toast = document.getElementById('copy-toast');
                 toast.classList.remove('hidden');
-                setTimeout(() => { toast.classList.add('hidden'); }, 2000);
+                setTimeout(() => { toast.classList.add('hidden'); }, 2500);
             } catch (err) {
                 alert('Gagal menyalin teks.');
             }
@@ -625,29 +649,29 @@ Boleh tolong dibantu cek ya. Thanks!`;
             actionButtons.classList.remove('flex');
 
             if (gdVal === 0) {
-                outs.statusContainer.className = "p-3 rounded-lg bg-gray-700 border border-gray-600";
+                outs.statusContainer.className = "p-4 rounded-2xl bg-gray-800/60 border border-gray-700 backdrop-blur-sm relative z-10 transition-all duration-300";
                 outs.statusText.innerText = "BELUM DICEK";
-                outs.statusText.className = "text-sm font-bold text-gray-400";
+                outs.statusText.className = "text-sm font-extrabold text-gray-400 tracking-wide";
             } else if (Math.abs(selisih) <= 100) { 
-                outs.statusContainer.className = "p-3 rounded-lg bg-green-800 border border-green-600";
+                outs.statusContainer.className = "p-4 rounded-2xl bg-emerald-900/30 border border-emerald-500/40 backdrop-blur-sm relative z-10 transition-all duration-300";
                 outs.statusText.innerText = "✅ COCOK (SESUAI)";
-                outs.statusText.className = "text-sm font-bold text-green-300";
+                outs.statusText.className = "text-sm font-extrabold text-emerald-400 tracking-wide";
                 outs.selisih.innerText = "Rp 0";
             } else if (selisih > 0) {
-                outs.statusContainer.className = "p-3 rounded-lg bg-red-900 border border-red-700";
+                outs.statusContainer.className = "p-4 rounded-2xl bg-rose-900/30 border border-rose-500/40 backdrop-blur-sm relative z-10 transition-all duration-300";
                 outs.statusText.innerText = "⚠️ KURANG BAYAR";
-                outs.statusText.className = "text-sm font-bold text-red-300";
+                outs.statusText.className = "text-sm font-extrabold text-rose-400 tracking-wide";
                 actionButtons.classList.remove('hidden'); 
                 actionButtons.classList.add('flex');
             } else {
-                outs.statusContainer.className = "p-3 rounded-lg bg-yellow-600 border border-yellow-500";
+                outs.statusContainer.className = "p-4 rounded-2xl bg-amber-900/30 border border-amber-500/40 backdrop-blur-sm relative z-10 transition-all duration-300";
                 outs.statusText.innerText = "⚠️ LEBIH BAYAR";
-                outs.statusText.className = "text-sm font-bold text-yellow-100";
+                outs.statusText.className = "text-sm font-extrabold text-amber-400 tracking-wide";
             }
         }
 
         function requestReset() {
-            if(confirm('Hapus isian dan kunci aplikasi?')) {
+            if(confirm('Hapus seluruh data isian dan kunci kembali layar?')) {
                 silentClearData();
                 lockAppAgain();
             }
