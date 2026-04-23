@@ -7,6 +7,8 @@
     <!-- Menggunakan font Inter untuk tampilan yang lebih modern -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Library untuk memotret HTML menjadi Gambar -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -37,8 +39,10 @@
             max-width: 28rem; /* 448px */
             margin: 0 auto; 
             background-color: #fafafa;
-            min-height: 100vh; 
+            min-height: 100dvh; 
             box-shadow: 0 0 40px rgba(0,0,0,0.08);
+            padding-bottom: 2rem;
+            overflow-y: auto; /* Memastikan scroll berjalan lancar di dalam kontainer */
         }
         
         /* Modern Input Styling */
@@ -82,7 +86,7 @@
         ::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="text-gray-800 font-sans antialiased overflow-hidden privacy-mode">
+<body class="text-gray-800 font-sans antialiased privacy-mode">
 
     <!-- Desktop Blocker Overlay -->
     <div id="desktop-blocker" class="fixed inset-0 z-[9999] bg-gray-900 flex-col items-center justify-center p-8 text-center">
@@ -106,10 +110,13 @@
                 </svg>
             </div>
             <h2 class="text-2xl font-extrabold text-gray-900 mb-2">Peringatan Privasi</h2>
-            <div class="text-sm text-gray-600 mb-8 leading-relaxed bg-penta-50/50 p-4 rounded-2xl border border-penta-100">
+            <div class="text-sm text-gray-600 mb-6 leading-relaxed bg-penta-50/50 p-4 rounded-2xl border border-penta-100">
                 <p class="mb-2">Informasi gaji bersifat <strong>sangat rahasia</strong>.</p>
-                <p class="text-penta-700 font-semibold animate-pulse">Tahan tombol di bawah ini dan pastikan area sekitar Anda aman.</p>
+                <p class="text-penta-700 font-semibold animate-pulse">Tahan tombol di bawah ini dan pastikan tidak ada rekan kerja yang melihat perhitungan gaji anda.</p>
             </div>
+            
+            <!-- Indikator Angka Hitung Mundur Besar -->
+            <div id="countdown-display" class="text-7xl font-black text-penta-500 mb-4 h-20 flex items-center justify-center opacity-0 transition-opacity duration-200">5</div>
             
             <div class="relative w-full h-14 bg-gray-100 rounded-2xl overflow-hidden touch-none-btn cursor-pointer shadow-inner border border-gray-200" id="hold-btn-container">
                 <div id="hold-progress" class="absolute top-0 left-0 h-full bg-gradient-to-r from-penta-500 to-penta-600 w-0 transition-all duration-75 ease-linear"></div>
@@ -121,27 +128,56 @@
         </div>
     </div>
 
+    <!-- Formula Modal -->
+    <div id="formula-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-gray-900/60 p-5 backdrop-blur-sm transition-opacity opacity-0">
+        <div class="bg-white rounded-[2rem] p-6 max-w-xs w-full shadow-2xl transform scale-95 transition-transform duration-300" id="formula-modal-content">
+            <h3 class="text-lg font-extrabold text-gray-900 mb-3 flex items-center gap-2">
+                <svg class="w-5 h-5 text-penta-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                Rumus Potongan
+            </h3>
+            <div class="text-sm text-gray-600 space-y-3 mb-6 leading-relaxed">
+                <p>Total potongan keterlambatan dihitung dengan menggunakan rumus standar berikut:</p>
+                <div class="bg-penta-50 p-3 rounded-xl font-mono text-[11px] sm:text-xs text-center border border-penta-100 text-penta-700 font-bold">
+                    ((Tunj. Pokok / 2) / Hari Kerja) × Jml Telat
+                </div>
+                <p class="text-[11px] text-gray-500 italic">*Potongan ini juga akan secara otomatis mengurangi dasar perhitungan upah lembur per jam Anda.</p>
+            </div>
+            <button onclick="closeFormulaModal()" class="w-full bg-gradient-to-r from-penta-600 to-penta-500 hover:from-penta-700 hover:to-penta-600 text-white font-bold py-3.5 px-4 rounded-xl transition duration-200 active:scale-95 shadow-md">Tutup</button>
+        </div>
+    </div>
+
     <!-- Mobile App Container -->
     <div class="app-container relative flex flex-col">
         
         <!-- Header bergradasi modern -->
         <header class="bg-gradient-to-br from-penta-700 via-penta-600 to-penta-800 text-white shadow-lg rounded-b-[2rem] z-10 sticky top-0 border-b border-white/10">
-            <div class="px-6 py-5 flex justify-between items-center">
-                <div>
-                    <h1 class="text-2xl font-extrabold flex items-center gap-2 tracking-tight">
-                        <svg class="w-7 h-7 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-                        Paychecker
+            <div class="px-5 py-5 flex justify-between items-center gap-2">
+                <div class="flex-1 min-w-0">
+                    <h1 class="text-xl font-extrabold flex items-center gap-1.5 tracking-tight truncate">
+                        <svg class="w-6 h-6 drop-shadow-md shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                        <span class="truncate">Paychecker</span>
                     </h1>
                 </div>
                 
-                <button onclick="togglePrivacy()" class="p-2.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all shadow-sm border border-white/10 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-white/50 active:scale-95">
-                    <svg id="icon-eye-open" class="w-5 h-5 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                    <svg id="icon-eye-closed" class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.02 10.02 0 01-4.132 5.411m0 0L21 21"></path></svg>
-                </button>
+                <div class="flex items-center gap-1.5 shrink-0">
+                    <!-- Tombol Undo -->
+                    <button id="btn-undo" onclick="undo()" disabled class="p-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all shadow-sm border border-white/10 flex items-center justify-center focus:outline-none disabled:opacity-30 disabled:cursor-not-allowed">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
+                    </button>
+                    <!-- Tombol Redo -->
+                    <button id="btn-redo" onclick="redo()" disabled class="p-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all shadow-sm border border-white/10 flex items-center justify-center focus:outline-none disabled:opacity-30 disabled:cursor-not-allowed">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6"></path></svg>
+                    </button>
+                    <!-- Tombol Privasi -->
+                    <button onclick="togglePrivacy()" class="p-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all shadow-sm border border-white/10 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-white/50 active:scale-95 ml-1">
+                        <svg id="icon-eye-open" class="w-5 h-5 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                        <svg id="icon-eye-closed" class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.02 10.02 0 01-4.132 5.411m0 0L21 21"></path></svg>
+                    </button>
+                </div>
             </div>
         </header>
 
-        <main class="flex-1 px-5 py-6 space-y-6 pb-24">
+        <main class="flex-1 px-5 py-6 space-y-6 pb-52">
             
             <!-- Pendapatan -->
             <div class="bg-white p-5 rounded-3xl shadow-soft border border-gray-100">
@@ -154,24 +190,38 @@
                         <label class="block text-xs font-semibold text-gray-600 mb-1.5 ml-1">Gaji Pokok</label>
                         <div class="relative">
                             <span class="absolute left-3.5 top-3 text-gray-400 font-bold text-sm">Rp</span>
-                            <input type="text" inputmode="numeric" id="gajiPokok" class="input-field sensitive-input w-full pl-11 pr-4 py-3 rounded-xl text-sm font-bold tracking-wide" value="0">
+                            <input type="text" inputmode="numeric" enterkeyhint="done" id="gajiPokok" class="input-field sensitive-input w-full pl-11 pr-4 py-3 rounded-xl text-sm font-bold tracking-wide" value="0">
                         </div>
+                        <p id="gp-warning" class="hidden text-[10px] text-rose-500 font-bold mt-1.5 ml-1 animate-pulse">⚠️ Gaji Pokok wajib diisi terlebih dahulu!</p>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-600 mb-1.5 ml-1">Tunjangan Pokok</label>
                         <div class="relative">
                             <span class="absolute left-3.5 top-3 text-gray-400 font-bold text-sm">Rp</span>
-                            <input type="text" inputmode="numeric" id="tunjanganPokok" class="input-field sensitive-input w-full pl-11 pr-4 py-3 rounded-xl text-sm font-bold tracking-wide" value="0">
+                            <input type="text" inputmode="numeric" enterkeyhint="done" id="tunjanganPokok" class="input-field sensitive-input w-full pl-11 pr-4 py-3 rounded-xl text-sm font-bold tracking-wide" value="0">
                         </div>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1.5 ml-1">Tunj. Khusus</label>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1.5 ml-1">Tunjangan Khusus (opsional)</label>
                         <div class="relative">
                             <span class="absolute left-3.5 top-3 text-gray-400 font-bold text-sm">Rp</span>
-                            <input type="text" inputmode="numeric" id="tunjanganKhusus" class="input-field sensitive-input w-full pl-11 pr-4 py-3 rounded-xl text-sm font-bold tracking-wide" value="0">
+                            <input type="text" inputmode="numeric" enterkeyhint="done" id="tunjanganKhusus" class="input-field sensitive-input w-full pl-11 pr-4 py-3 rounded-xl text-sm font-bold tracking-wide" value="0">
                         </div>
                     </div>
                 </div>
+
+                <!-- Fitur Simpan Data Dasar (Baru) -->
+                <div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
+                    <span class="text-[11px] text-gray-500 font-semibold flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                        Ingat data dasar di HP saya
+                    </span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="toggleSave" class="sr-only peer" onchange="handleSaveToggle()">
+                        <div class="w-8 h-4 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-penta-500"></div>
+                    </label>
+                </div>
+
             </div>
 
             <!-- Potongan Telat -->
@@ -183,14 +233,14 @@
                     </h2>
                     <div class="flex items-center gap-2 bg-penta-50 px-2.5 py-1.5 rounded-xl border border-penta-100">
                         <label class="block text-[10px] font-bold text-penta-800 leading-tight text-right">Hari Kerja<br>(Bulan)</label>
-                        <input type="number" id="hariKerja" class="w-14 px-1 py-1 bg-white border border-penta-200 rounded-lg text-sm text-center font-bold focus:outline-none focus:border-penta-500 shadow-sm text-penta-700" value="22" min="1" oninput="calculate()">
+                        <input type="number" enterkeyhint="done" id="hariKerja" class="w-14 px-1 py-1 bg-white border border-penta-200 rounded-lg text-sm text-center font-bold focus:outline-none focus:border-penta-500 shadow-sm text-penta-700" value="22" min="1" oninput="calculate()">
                     </div>
                 </div>
                 <div class="space-y-4">
                     <div class="flex gap-3">
                         <div class="w-1/2">
                             <label class="block text-xs font-semibold text-gray-600 mb-1.5 ml-1">Jml Telat (Kali)</label>
-                            <input type="number" id="jmlTelat" class="input-field w-full px-4 py-3 border rounded-xl text-sm font-bold text-center tracking-wide" value="0" min="0" step="0.5" oninput="calculate()">
+                            <input type="number" enterkeyhint="done" id="jmlTelat" class="input-field w-full px-4 py-3 border rounded-xl text-sm font-bold text-center tracking-wide" value="0" min="0" step="0.5" oninput="calculate()">
                         </div>
                         <div class="w-1/2">
                             <label class="block text-xs font-semibold text-gray-600 mb-1.5 ml-1">Pot. per Telat</label>
@@ -201,7 +251,12 @@
                         </div>
                     </div>
                     <div class="bg-gradient-to-r from-penta-50 to-white p-3 rounded-xl flex justify-between items-center text-xs border border-penta-100 shadow-sm">
-                        <span class="text-penta-800 font-semibold">Total Potongan Telat:</span>
+                        <span class="text-penta-800 font-semibold flex items-center gap-1.5">
+                            Total Potongan Telat:
+                            <button onclick="showFormulaModal()" class="text-penta-400 hover:text-penta-600 focus:outline-none flex items-center justify-center bg-white rounded-full p-0.5 shadow-sm border border-penta-200 transition-colors" title="Lihat Rumus">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                            </button>
+                        </span>
                         <span id="outTotalPotTelat" class="font-extrabold text-penta-700 text-sm">Rp 0</span>
                     </div>
                 </div>
@@ -216,11 +271,21 @@
                     </h2>
                     <div class="flex items-center gap-2 bg-penta-50 px-2.5 py-1.5 rounded-xl border border-penta-100">
                         <label class="block text-[10px] font-bold text-penta-800 leading-tight text-right">Pembagi<br>Lembur</label>
-                        <input type="number" id="jamKerja" class="w-14 px-1 py-1 bg-white border border-penta-200 rounded-lg text-sm text-center font-bold focus:outline-none focus:border-penta-500 shadow-sm text-penta-700" value="160" min="1" oninput="calculate()">
+                        <input type="number" enterkeyhint="done" id="jamKerja" class="w-14 px-1 py-1 bg-white border border-penta-200 rounded-lg text-sm text-center font-bold focus:outline-none focus:border-penta-500 shadow-sm text-penta-700" value="160" min="1" oninput="calculate()">
                     </div>
                 </div>
                 
                 <div class="space-y-3">
+                    
+                    <!-- RATE LEMBUR VIEWER -->
+                    <div class="bg-gradient-to-r from-emerald-50 to-white p-3 rounded-2xl flex justify-between items-center text-xs border border-emerald-100 shadow-sm mb-4">
+                        <span class="text-emerald-800 font-semibold flex items-center gap-1.5">
+                            <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Rate Upah Lembur Anda:
+                        </span>
+                        <span id="outRateLembur" class="font-extrabold text-emerald-600 text-sm">Rp 0 / jam</span>
+                    </div>
+
                     <!-- Weekdays -->
                     <div class="flex items-center gap-3 bg-gray-50/80 p-3 rounded-2xl border border-gray-100 hover:border-penta-200 transition-colors">
                         <div class="w-[45%]">
@@ -229,11 +294,11 @@
                         </div>
                         <div class="w-[55%] flex gap-2">
                             <div class="relative w-1/2">
-                                <input type="number" id="lwdJam" class="input-field w-full pl-2 pr-7 py-2.5 rounded-xl text-sm font-bold text-center" value="0" min="0" oninput="calculate()">
+                                <input type="number" enterkeyhint="done" id="lwdJam" class="input-field w-full pl-2 pr-7 py-2.5 rounded-xl text-sm font-bold text-center" value="0" min="0" oninput="calculate()">
                                 <span class="absolute right-2 top-3 text-gray-400 text-[10px] font-bold">J</span>
                             </div>
                             <div class="relative w-1/2">
-                                <input type="number" id="lwdMenit" class="input-field w-full pl-2 pr-7 py-2.5 rounded-xl text-sm font-bold text-center" value="0" min="0" max="59" oninput="calculate()">
+                                <input type="number" enterkeyhint="done" id="lwdMenit" class="input-field w-full pl-2 pr-7 py-2.5 rounded-xl text-sm font-bold text-center" value="0" min="0" max="59" oninput="calculate()">
                                 <span class="absolute right-2 top-3 text-gray-400 text-[10px] font-bold">M</span>
                             </div>
                         </div>
@@ -246,11 +311,11 @@
                         </div>
                         <div class="w-[55%] flex gap-2">
                             <div class="relative w-1/2">
-                                <input type="number" id="lsabJam" class="input-field w-full pl-2 pr-7 py-2.5 rounded-xl text-sm font-bold text-center" value="0" min="0" oninput="calculate()">
+                                <input type="number" enterkeyhint="done" id="lsabJam" class="input-field w-full pl-2 pr-7 py-2.5 rounded-xl text-sm font-bold text-center" value="0" min="0" oninput="calculate()">
                                 <span class="absolute right-2 top-3 text-gray-400 text-[10px] font-bold">J</span>
                             </div>
                             <div class="relative w-1/2">
-                                <input type="number" id="lsabMenit" class="input-field w-full pl-2 pr-7 py-2.5 rounded-xl text-sm font-bold text-center" value="0" min="0" max="59" oninput="calculate()">
+                                <input type="number" enterkeyhint="done" id="lsabMenit" class="input-field w-full pl-2 pr-7 py-2.5 rounded-xl text-sm font-bold text-center" value="0" min="0" max="59" oninput="calculate()">
                                 <span class="absolute right-2 top-3 text-gray-400 text-[10px] font-bold">M</span>
                             </div>
                         </div>
@@ -263,11 +328,11 @@
                         </div>
                         <div class="w-[55%] flex gap-2">
                             <div class="relative w-1/2">
-                                <input type="number" id="lminJam" class="input-field w-full pl-2 pr-7 py-2.5 rounded-xl text-sm font-bold text-center" value="0" min="0" oninput="calculate()">
+                                <input type="number" enterkeyhint="done" id="lminJam" class="input-field w-full pl-2 pr-7 py-2.5 rounded-xl text-sm font-bold text-center" value="0" min="0" oninput="calculate()">
                                 <span class="absolute right-2 top-3 text-gray-400 text-[10px] font-bold">J</span>
                             </div>
                             <div class="relative w-1/2">
-                                <input type="number" id="lminMenit" class="input-field w-full pl-2 pr-7 py-2.5 rounded-xl text-sm font-bold text-center" value="0" min="0" max="59" oninput="calculate()">
+                                <input type="number" enterkeyhint="done" id="lminMenit" class="input-field w-full pl-2 pr-7 py-2.5 rounded-xl text-sm font-bold text-center" value="0" min="0" max="59" oninput="calculate()">
                                 <span class="absolute right-2 top-3 text-gray-400 text-[10px] font-bold">M</span>
                             </div>
                         </div>
@@ -284,7 +349,7 @@
                 <div>
                     <div class="relative">
                         <span class="absolute left-3.5 top-3 text-gray-400 font-bold text-sm">Rp</span>
-                        <input type="text" inputmode="numeric" id="potonganJamsostek" class="input-field sensitive-input w-full pl-11 pr-4 py-3 border rounded-xl text-sm font-bold text-penta-600 tracking-wide" value="0">
+                        <input type="text" inputmode="numeric" enterkeyhint="done" id="potonganJamsostek" class="input-field sensitive-input w-full pl-11 pr-4 py-3 border rounded-xl text-sm font-bold text-penta-600 tracking-wide" value="0">
                     </div>
                 </div>
             </div>
@@ -296,20 +361,20 @@
                 
                 <h2 class="text-sm font-extrabold text-penta-800 mb-3 flex items-center gap-2 relative z-10">
                     <svg class="w-5 h-5 text-penta-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    Nominal Ditransfer (Bank)
+                    Gaji Yang Ditransfer
                 </h2>
                 <div class="relative z-10">
                     <span class="absolute left-3.5 top-3.5 text-penta-700 font-extrabold text-sm">Rp</span>
-                    <input type="text" inputmode="numeric" id="gajiDiterima" class="w-full pl-11 pr-4 py-3.5 bg-white border-2 border-penta-200 rounded-xl text-base font-extrabold text-penta-800 shadow-sm focus:outline-none focus:border-penta-400 focus:ring-4 focus:ring-penta-100 transition-all tracking-wide sensitive-input" value="0" placeholder="0">
+                    <input type="text" inputmode="numeric" enterkeyhint="done" id="gajiDiterima" class="w-full pl-11 pr-4 py-3.5 bg-white border-2 border-penta-200 rounded-xl text-base font-extrabold text-penta-800 shadow-sm focus:outline-none focus:border-penta-400 focus:ring-4 focus:ring-penta-100 transition-all tracking-wide sensitive-input" value="0" placeholder="0">
                 </div>
             </div>
 
-            <!-- Hasil / Dark Card Premium -->
-            <div class="bg-gradient-to-br from-gray-900 via-[#1a1c23] to-black text-white p-6 rounded-[2rem] shadow-2xl mt-6 border border-gray-800 relative overflow-hidden">
+            <!-- KARTU HASIL (TERBUNGKUS UNTUK SCREENSHOT) -->
+            <div id="rekap-card-container" class="bg-gradient-to-br from-gray-900 via-[#1a1c23] to-black text-white p-6 rounded-[2rem] shadow-2xl mt-6 border border-gray-800 relative overflow-hidden">
                 <!-- Glowing Orb Background -->
                 <div class="absolute -top-12 -right-12 w-40 h-40 bg-penta-600 rounded-full mix-blend-screen filter blur-[40px] opacity-30 pointer-events-none"></div>
                 
-                <h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-4 text-center">Rekapitulasi Sistem</h3>
+                <h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-4 text-center relative z-10">Rekapitulasi Sistem</h3>
                 
                 <div class="space-y-2 text-sm border-b border-gray-800 pb-4 mb-4 relative z-10">
                     <div class="flex justify-between items-center">
@@ -349,28 +414,42 @@
                     </div>
                 </div>
                 
-                <!-- Action Buttons (WA & Copy) -->
-                <div id="action-buttons" class="hidden gap-3 mt-5 relative z-10">
-                    <button onclick="copyMessage()" class="flex-1 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold py-3.5 px-2 rounded-xl transition duration-200 flex justify-center items-center gap-1.5 text-xs backdrop-blur-md active:scale-95">
+                <!-- Watermark (Hanya muncul saat di-screenshot) -->
+                <div id="watermark" class="hidden text-center mt-6 text-[9px] text-gray-600 font-medium tracking-widest uppercase">
+                    BUKTI REKAPITULASI GAJI
+                </div>
+            </div>
+
+            <!-- Action Buttons Group (Di luar kartu hasil agar tidak ikut ter-screenshot) -->
+            <div id="action-buttons" class="hidden flex-col gap-3 mt-5">
+                <button onclick="shareRekap()" class="w-full bg-white text-gray-800 border border-gray-200 font-extrabold py-3.5 px-2 rounded-2xl shadow-sm hover:bg-gray-50 transition duration-200 flex justify-center items-center gap-1.5 text-xs active:scale-95">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
+                    Bagikan Bukti Rekap (Bisa ke WA)
+                </button>
+                <div class="flex gap-3">
+                    <button onclick="copyMessage()" class="flex-1 bg-white text-penta-700 border border-penta-200 font-bold py-3.5 px-2 rounded-2xl shadow-sm hover:bg-penta-50 transition duration-200 flex justify-center items-center gap-1.5 text-xs active:scale-95">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
                         Salin Teks
                     </button>
-                    <button onclick="sendWA()" class="flex-1 bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:from-[#1da851] hover:to-[#0f7569] text-white font-bold py-3.5 px-2 rounded-xl shadow-[0_0_15px_rgba(37,211,102,0.4)] transition duration-200 flex justify-center items-center gap-1.5 text-xs active:scale-95">
+                    <button id="btn-wa" onclick="sendWA()" class="hidden flex-1 bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:from-[#1da851] hover:to-[#0f7569] text-white font-bold py-3.5 px-2 rounded-2xl shadow-[0_0_15px_rgba(37,211,102,0.4)] transition duration-200 flex justify-center items-center gap-1.5 text-xs active:scale-95">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
                         Kirim WA
                     </button>
                 </div>
             </div>
 
-            <div class="pt-6 pb-2">
-                <button onclick="requestReset()" class="w-full bg-white text-penta-600 font-bold py-3.5 px-4 border border-penta-200 rounded-2xl shadow-sm text-sm hover:bg-penta-50 active:scale-95 transition-all">
-                    Reset & Kunci Layar
+            <!-- Jarak Ekstra di bawah -->
+            <div class="h-10"></div>
+            
+            <div class="pb-10">
+                <button onclick="requestReset()" class="w-full bg-red-50 text-penta-700 font-bold py-3.5 px-4 border border-red-200 rounded-2xl shadow-sm text-sm hover:bg-penta-100 active:scale-95 transition-all">
+                    Bersihkan Lembur & Kunci Layar
                 </button>
             </div>
 
-            <!-- Toast Copy Notification -->
-            <div id="copy-toast" class="hidden fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-gray-900/90 backdrop-blur-md border border-gray-700 text-white text-xs font-semibold py-3 px-6 rounded-full shadow-2xl z-50 transition-opacity">
-                ✅ Teks berhasil disalin!
+            <!-- Toast Notification -->
+            <div id="copy-toast" class="hidden fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-gray-900/90 backdrop-blur-md border border-gray-700 text-white text-xs font-semibold py-3 px-6 rounded-full shadow-2xl z-50 transition-opacity whitespace-nowrap">
+                Pesan Toast
             </div>
 
         </main>
@@ -386,6 +465,7 @@
         const progressBar = document.getElementById('hold-progress');
         const holdText = document.getElementById('hold-text');
         const overlay = document.getElementById('privacy-overlay');
+        const countdownDisplay = document.getElementById('countdown-display');
 
         function startHold(e) {
             e.preventDefault(); 
@@ -393,10 +473,21 @@
             progressBar.style.width = '0%';
             holdText.classList.remove('text-gray-500');
             holdText.classList.add('text-white');
+            
+            // Munculkan angka hitung mundur
+            countdownDisplay.classList.remove('opacity-0');
+            countdownDisplay.innerText = '5';
+            holdText.innerText = 'Menahan...';
+
             progressInterval = setInterval(() => {
                 holdTime += 50;
                 let percentage = (holdTime / requiredHoldTime) * 100;
                 progressBar.style.width = percentage + '%';
+                
+                // Update Indikator Hitung Mundur Besar
+                let remainingSec = Math.ceil((requiredHoldTime - holdTime) / 1000);
+                countdownDisplay.innerText = remainingSec;
+
                 if (holdTime >= requiredHoldTime) {
                     clearInterval(progressInterval);
                     dismissWarning();
@@ -411,6 +502,10 @@
                 progressBar.style.width = '0%';
                 holdText.classList.remove('text-white');
                 holdText.classList.add('text-gray-500');
+                holdText.innerText = 'Tahan 5 Detik untuk Masuk';
+                
+                // Sembunyikan kembali angka hitung mundur
+                countdownDisplay.classList.add('opacity-0');
             }
         }
 
@@ -423,10 +518,30 @@
         function dismissWarning() {
             overlay.style.opacity = '0';
             overlay.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+            countdownDisplay.classList.add('opacity-0');
             setTimeout(() => {
                 overlay.style.display = 'none';
                 document.body.classList.remove('overflow-hidden');
             }, 400);
+        }
+
+        // --- FORMULA MODAL LOGIC ---
+        const formulaModal = document.getElementById('formula-modal');
+        const formulaModalContent = document.getElementById('formula-modal-content');
+
+        function showFormulaModal() {
+            formulaModal.classList.remove('hidden');
+            void formulaModal.offsetWidth;
+            formulaModal.classList.remove('opacity-0');
+            formulaModalContent.classList.remove('scale-95');
+        }
+
+        function closeFormulaModal() {
+            formulaModal.classList.add('opacity-0');
+            formulaModalContent.classList.add('scale-95');
+            setTimeout(() => {
+                formulaModal.classList.add('hidden');
+            }, 300);
         }
 
         // --- NEW AUTO-PRIVACY LOGIC (Pindah Tab / Tutup Layar) ---
@@ -438,14 +553,67 @@
             }
         });
 
+        // --- SAVE DATA DASAR LOGIC ---
+        function handleSaveToggle() {
+            saveBaseData();
+            const isChecked = document.getElementById('toggleSave').checked;
+            if (isChecked) {
+                showToast('✅ Data Dasar akan diingat untuk bulan depan');
+            } else {
+                showToast('🗑️ Memori HP dibersihkan');
+            }
+        }
+
+        function saveBaseData() {
+            const isChecked = document.getElementById('toggleSave').checked;
+            localStorage.setItem('penta_toggle', isChecked);
+            
+            if (isChecked) {
+                localStorage.setItem('penta_gp', parseDottedNumber(els.gp.value));
+                localStorage.setItem('penta_tp', parseDottedNumber(els.tp.value));
+                localStorage.setItem('penta_tk', parseDottedNumber(els.tk.value));
+                localStorage.setItem('penta_pot', parseDottedNumber(els.pot.value));
+                localStorage.setItem('penta_jk', els.jk.value);
+                localStorage.setItem('penta_hk', els.hk.value);
+            } else {
+                localStorage.removeItem('penta_gp');
+                localStorage.removeItem('penta_tp');
+                localStorage.removeItem('penta_tk');
+                localStorage.removeItem('penta_pot');
+                localStorage.removeItem('penta_jk');
+                localStorage.removeItem('penta_hk');
+            }
+        }
+
+        function loadBaseData() {
+            if (localStorage.getItem('penta_toggle') === 'true') {
+                document.getElementById('toggleSave').checked = true;
+                if (localStorage.getItem('penta_gp') !== null) els.gp.value = formatNumberWithDots(localStorage.getItem('penta_gp'));
+                if (localStorage.getItem('penta_tp') !== null) els.tp.value = formatNumberWithDots(localStorage.getItem('penta_tp'));
+                if (localStorage.getItem('penta_tk') !== null) els.tk.value = formatNumberWithDots(localStorage.getItem('penta_tk'));
+                if (localStorage.getItem('penta_pot') !== null) els.pot.value = formatNumberWithDots(localStorage.getItem('penta_pot'));
+                if (localStorage.getItem('penta_jk') !== null) els.jk.value = localStorage.getItem('penta_jk');
+                if (localStorage.getItem('penta_hk') !== null) els.hk.value = localStorage.getItem('penta_hk');
+            }
+        }
+
+
         function silentClearData() {
-            const allInputs = document.querySelectorAll('input');
+            const isSaved = document.getElementById('toggleSave').checked;
+            const keepIds = ['gajiPokok', 'tunjanganPokok', 'tunjanganKhusus', 'potonganJamsostek', 'jamKerja', 'hariKerja'];
+            
+            const allInputs = document.querySelectorAll('input[type="text"], input[type="number"]');
             allInputs.forEach(input => {
-                if(input.id === 'jamKerja') input.value = '160';
-                else if(input.id === 'hariKerja') input.value = '22';
-                else if(input.id !== 'potPerTelat') input.value = '0';
+                if (isSaved && keepIds.includes(input.id)) {
+                    // Jangan hapus nilainya jika fitur simpan aktif
+                } else {
+                    if(input.id === 'jamKerja') input.value = '160';
+                    else if(input.id === 'hariKerja') input.value = '22';
+                    else if(input.id !== 'potPerTelat') input.value = '0';
+                }
             });
             calculate();
+            captureState(); // Merekam state ketika dihapus
             window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
@@ -457,11 +625,90 @@
             progressBar.style.width = '0%';
             holdText.classList.remove('text-white');
             holdText.classList.add('text-gray-500');
+            holdText.innerText = 'Tahan 5 Detik untuk Masuk';
+            countdownDisplay.classList.add('opacity-0');
             if(!isPrivacyOn) togglePrivacy();
         }
 
         const MULT_WD = 1.5; const MULT_SABTU = 2.0; const MULT_MINGGU = 3.0;
         let isPrivacyOn = true;
+        
+        // --- UNDO & REDO LOGIC ---
+        let stateHistory = [];
+        let historyIndex = -1;
+        let isUndoingOrRedoing = false;
+
+        function captureState() {
+            if (isUndoingOrRedoing) return;
+            const currentState = {
+                gp: els.gp.value, tp: els.tp.value, tk: els.tk.value,
+                hk: els.hk.value, jmlTelat: els.jmlTelat.value, jk: els.jk.value,
+                lwdJam: els.lwdJam.value, lwdMenit: els.lwdMenit.value,
+                lsabJam: els.lsabJam.value, lsabMenit: els.lsabMenit.value,
+                lminJam: els.lminJam.value, lminMenit: els.lminMenit.value,
+                pot: els.pot.value, gd: els.gd.value
+            };
+
+            // Jika state sama persis dengan history terakhir, batalkan simpan (mencegah duplikat)
+            if (historyIndex >= 0) {
+                const lastState = stateHistory[historyIndex];
+                if (JSON.stringify(lastState) === JSON.stringify(currentState)) return;
+            }
+
+            // Memotong array riwayat jika user melakukan undo lalu mengetik angka baru
+            if (historyIndex < stateHistory.length - 1) {
+                stateHistory = stateHistory.slice(0, historyIndex + 1);
+            }
+
+            stateHistory.push(currentState);
+            
+            // Batasi riwayat maksimal 40 langkah untuk menghemat memori browser
+            if (stateHistory.length > 40) {
+                stateHistory.shift();
+            } else {
+                historyIndex++;
+            }
+            updateUndoRedoUI();
+        }
+
+        function applyState(state) {
+            els.gp.value = state.gp; els.tp.value = state.tp; els.tk.value = state.tk;
+            els.hk.value = state.hk; els.jmlTelat.value = state.jmlTelat; els.jk.value = state.jk;
+            els.lwdJam.value = state.lwdJam; els.lwdMenit.value = state.lwdMenit;
+            els.lsabJam.value = state.lsabJam; els.lsabMenit.value = state.lsabMenit;
+            els.lminJam.value = state.lminJam; els.lminMenit.value = state.lminMenit;
+            els.pot.value = state.pot; els.gd.value = state.gd;
+            calculate();
+        }
+
+        function undo() {
+            if (historyIndex > 0) {
+                isUndoingOrRedoing = true;
+                historyIndex--;
+                applyState(stateHistory[historyIndex]);
+                updateUndoRedoUI();
+                isUndoingOrRedoing = false;
+            }
+        }
+
+        function redo() {
+            if (historyIndex < stateHistory.length - 1) {
+                isUndoingOrRedoing = true;
+                historyIndex++;
+                applyState(stateHistory[historyIndex]);
+                updateUndoRedoUI();
+                isUndoingOrRedoing = false;
+            }
+        }
+
+        function updateUndoRedoUI() {
+            const btnUndo = document.getElementById('btn-undo');
+            const btnRedo = document.getElementById('btn-redo');
+            if (btnUndo && btnRedo) {
+                btnUndo.disabled = historyIndex <= 0;
+                btnRedo.disabled = historyIndex >= stateHistory.length - 1;
+            }
+        }
 
         const formatter = new Intl.NumberFormat('id-ID', {
             style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 
@@ -500,6 +747,7 @@
         const outs = {
             totPotTelatUI: document.getElementById('outTotalPotTelat'),
             totPotTelatBawah: document.getElementById('outTotalPotTelatBawah'),
+            rateLembur: document.getElementById('outRateLembur'),
             totPendapatan: document.getElementById('outTotalPendapatan'), 
             totalLembur: document.getElementById('outTotalLembur'),
             pot: document.getElementById('outPotongan'), 
@@ -510,9 +758,14 @@
             statusContainer: document.getElementById('statusContainer')
         };
         const actionButtons = document.getElementById('action-buttons');
+        const btnWa = document.getElementById('btn-wa');
+
+        // Mendaftarkan Event Listener untuk menyimpan riwayat setiap kali input selesai diedit (blur)
+        const allTrackedInputs = [];
 
         const currencyInputs = [els.gp, els.tp, els.tk, els.pot, els.gd];
         currencyInputs.forEach(input => {
+            allTrackedInputs.push(input);
             input.addEventListener('input', function(e) {
                 let cursorPosition = this.selectionStart;
                 let oldLength = this.value.length;
@@ -521,15 +774,25 @@
                 cursorPosition = cursorPosition + (newLength - oldLength);
                 this.setSelectionRange(cursorPosition, cursorPosition);
                 calculate();
+                saveBaseData(); // Menyimpan ke memory hp bila toggle aktif
             });
             input.addEventListener('blur', function() { if(this.value === '') this.value = '0'; });
             input.addEventListener('focus', function() { if(this.value === '0') this.value = ''; });
         });
 
-        const hourMinInputs = [els.lwdJam, els.lwdMenit, els.lsabJam, els.lsabMenit, els.lminJam, els.lminMenit, els.jmlTelat, els.hk];
+        const hourMinInputs = [els.lwdJam, els.lwdMenit, els.lsabJam, els.lsabMenit, els.lminJam, els.lminMenit, els.jmlTelat, els.hk, els.jk];
         hourMinInputs.forEach(input => {
+            allTrackedInputs.push(input);
             input.addEventListener('focus', function() { if(this.value === '0') this.value = ''; });
             input.addEventListener('blur', function() { if(this.value === '') this.value = '0'; });
+            input.addEventListener('input', calculate);
+        });
+
+        // Trigger Simpan Riwayat (Undo/Redo) saat pengguna selesai mengetik di sebuah kolom
+        allTrackedInputs.forEach(input => {
+            input.addEventListener('blur', () => {
+                captureState();
+            });
         });
 
         function togglePrivacy() {
@@ -575,6 +838,13 @@
             return `Assalamualaikum, Halo, \n\nizin mau konfirmasi rekap gaji bulan ini ya. Kalo hasil hitungan mandiri ada selisih kurang bayar, seperti catatan ini ya :\n\n*Rincian Variabel Dasar:*\n- Gaji Pokok: ${formatter.format(gpVal)}\n- Tunj. Pokok: ${formatter.format(tpVal)}\n- Tunj. Khusus: ${formatter.format(tkVal)}\n- Hari Kerja: ${hkVal}\n- Potongan Telat: ${formatter.format(totalPotTelat)} (${jmlTelat} kali)\n- Pembagi Lembur: ${jkVal}\n\n*Data Jam Lembur:*\n- L. Biasa: ${els.lwdJam.value}j ${els.lwdMenit.value}m\n- L. Sabtu: ${els.lsabJam.value}j ${els.lsabMenit.value}m\n- L. Minggu: ${els.lminJam.value}j ${els.lminMenit.value}m\n- Estimasi Uang Lembur: ${formatter.format(totalUangLembur)}\n\n*Data Potongan:*\n- BPJS/Lainnya: ${formatter.format(potVal)}\n\n*Ringkasan:*\nTotal Seharusnya: ${formatter.format(takeHomePay)}\nTotal Ditransfer: ${formatter.format(gdVal)}\n*Selisih: ${formatter.format(selisih)}*\n\nBoleh tolong dibantu cek ya. Thanks!`;
         }
 
+        function showToast(message) {
+            const toast = document.getElementById('copy-toast');
+            toast.innerText = message;
+            toast.classList.remove('hidden');
+            setTimeout(() => { toast.classList.add('hidden'); }, 3000);
+        }
+
         function sendWA() {
             const text = generateMessageText();
             const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
@@ -594,36 +864,111 @@
             
             try {
                 document.execCommand('copy');
-                const toast = document.getElementById('copy-toast');
-                toast.classList.remove('hidden');
-                setTimeout(() => { toast.classList.add('hidden'); }, 2500);
+                showToast('✅ Teks rincian berhasil disalin!');
             } catch (err) {
                 alert('Gagal menyalin teks.');
             }
             document.body.removeChild(textArea);
         }
 
+        // Fitur 1: Unduh/Bagikan Gambar Rekap
+        async function shareRekap() {
+            if (isPrivacyOn) {
+                alert("PEMBERITAHUAN:\nHarap matikan Mode Privasi (ketuk ikon mata di kanan atas) terlebih dahulu agar nominal angka Anda terlihat di dalam foto bukti yang akan dibagikan.");
+                return;
+            }
+            
+            const rekapCard = document.getElementById('rekap-card-container');
+            const watermark = document.getElementById('watermark');
+            
+            // Memunculkan watermark khusus untuk screenshot
+            watermark.classList.remove('hidden');
+            
+            try {
+                const canvas = await html2canvas(rekapCard, {
+                    backgroundColor: '#1a1c23', // Memastikan background gelap solid
+                    scale: 2, 
+                    logging: false,
+                    useCORS: true
+                });
+                
+                // Sembunyikan watermark lagi
+                watermark.classList.add('hidden');
+                
+                // Konversi canvas ke file gambar (Blob)
+                canvas.toBlob(async (blob) => {
+                    const fileName = `Bukti_Rekap_${new Date().getTime()}.png`;
+                    const file = new File([blob], fileName, { type: 'image/png' });
+                    
+                    // Cek apakah HP mendukung fitur "Share File" (Berbagi Gambar Langsung)
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        try {
+                            await navigator.share({
+                                files: [file],
+                                title: 'Bukti Rekap Gaji',
+                                text: 'Berikut lampiran bukti perhitungan rekap gaji.'
+                            });
+                            showToast('✅ Bukti berhasil dibagikan!');
+                        } catch (error) {
+                            console.log('Sharing dibatalkan atau gagal', error);
+                            // Fallback (cadangan) ke Download jika user batal membagikan
+                            downloadCanvasAsImage(canvas, fileName);
+                        }
+                    } else {
+                        // Fallback ke Download jika Web Share API tidak didukung di browser ini
+                        downloadCanvasAsImage(canvas, fileName);
+                    }
+                }, 'image/png');
+
+            } catch (err) {
+                watermark.classList.add('hidden');
+                alert('Gagal membuat gambar bukti.');
+            }
+        }
+
+        function downloadCanvasAsImage(canvas, fileName) {
+            const link = document.createElement('a');
+            link.download = fileName;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast('✅ Bukti foto berhasil diunduh!');
+        }
+
         function calculate() {
             const gpVal = parseDottedNumber(els.gp.value);
             const tpVal = parseDottedNumber(els.tp.value);
             const tkVal = parseDottedNumber(els.tk.value);
-            
-            const hkVal = parseFloat(els.hk.value) || 22;
-            const potPerTelat = (tpVal / 2) / hkVal;
-            els.potPerTelat.value = isPrivacyOn ? '••••••' : formatNumberWithDots(Math.round(potPerTelat).toString());
-            
-            const jmlTelat = parseFloat(els.jmlTelat.value) || 0;
-            const totalPotTelat = potPerTelat * jmlTelat;
-            
             const potBPJSVal = parseDottedNumber(els.pot.value);
             const gdVal = parseDottedNumber(els.gd.value);
-            const jkVal = parseFloat(els.jk.value) || 1; 
             
             const lwdJ = (parseFloat(els.lwdJam.value) || 0) + ((parseFloat(els.lwdMenit.value) || 0) / 60);
             const lsbJ = (parseFloat(els.lsabJam.value) || 0) + ((parseFloat(els.lsabMenit.value) || 0) / 60);
             const lmnJ = (parseFloat(els.lminJam.value) || 0) + ((parseFloat(els.lminMenit.value) || 0) / 60);
+            const jmlTelat = parseFloat(els.jmlTelat.value) || 0;
+
+            // PERINGATAN GAJI POKOK = 0
+            const isOtherFilled = tpVal > 0 || tkVal > 0 || lwdJ > 0 || lsbJ > 0 || lmnJ > 0 || potBPJSVal > 0 || gdVal > 0 || jmlTelat > 0;
+            const gpWarning = document.getElementById('gp-warning');
+            if (gpVal === 0 && isOtherFilled) {
+                els.gp.classList.add('border-rose-500', 'bg-rose-50', 'text-rose-700');
+                els.gp.classList.remove('border-fecdd3');
+                gpWarning.classList.remove('hidden');
+            } else {
+                els.gp.classList.remove('border-rose-500', 'bg-rose-50', 'text-rose-700');
+                els.gp.classList.add('border-fecdd3');
+                gpWarning.classList.add('hidden');
+            }
+
+            const hkVal = parseFloat(els.hk.value) || 22;
+            const potPerTelat = (tpVal / 2) / hkVal;
+            els.potPerTelat.value = isPrivacyOn ? '••••••' : formatNumberWithDots(Math.round(potPerTelat).toString());
+            
+            const totalPotTelat = potPerTelat * jmlTelat;
+            const jkVal = parseFloat(els.jk.value) || 1; 
 
             const totalPendapatanDasar = gpVal + tpVal + tkVal;
+            
+            // Logika Excel v2.2
             const upahLemburPerJam = (gpVal + tpVal - totalPotTelat) / jkVal;
             
             const totalIndexJam = (lwdJ * MULT_WD) + (lsbJ * MULT_SABTU) + (lmnJ * MULT_MINGGU);
@@ -633,6 +978,9 @@
 
             const mask = 'Rp •••••••';
             
+            // Output Rate Lembur Baru (Fitur 2)
+            outs.rateLembur.innerText = isPrivacyOn ? mask + ' / jam' : formatter.format(upahLemburPerJam) + ' / jam';
+
             outs.totPotTelatUI.innerText = isPrivacyOn ? mask : formatter.format(totalPotTelat);
             outs.totPotTelatBawah.innerText = isPrivacyOn ? '- ' + mask : '- ' + formatter.format(totalPotTelat);
             
@@ -645,39 +993,60 @@
             outs.gd.innerText = isPrivacyOn ? mask : formatter.format(gdVal);
             outs.selisih.innerText = isPrivacyOn ? mask : formatter.format(Math.abs(selisih));
 
-            actionButtons.classList.add('hidden'); 
-            actionButtons.classList.remove('flex');
-
+            // Logika Visibilitas Tombol Aksi
             if (gdVal === 0) {
+                // Belum Dicek -> Sembunyikan semua tombol aksi
+                actionButtons.classList.add('hidden'); 
+                actionButtons.classList.remove('flex');
+                
                 outs.statusContainer.className = "p-4 rounded-2xl bg-gray-800/60 border border-gray-700 backdrop-blur-sm relative z-10 transition-all duration-300";
                 outs.statusText.innerText = "BELUM DICEK";
                 outs.statusText.className = "text-sm font-extrabold text-gray-400 tracking-wide";
-            } else if (Math.abs(selisih) <= 100) { 
-                outs.statusContainer.className = "p-4 rounded-2xl bg-emerald-900/30 border border-emerald-500/40 backdrop-blur-sm relative z-10 transition-all duration-300";
-                outs.statusText.innerText = "✅ COCOK (SESUAI)";
-                outs.statusText.className = "text-sm font-extrabold text-emerald-400 tracking-wide";
-                outs.selisih.innerText = "Rp 0";
-            } else if (selisih > 0) {
-                outs.statusContainer.className = "p-4 rounded-2xl bg-rose-900/30 border border-rose-500/40 backdrop-blur-sm relative z-10 transition-all duration-300";
-                outs.statusText.innerText = "⚠️ KURANG BAYAR";
-                outs.statusText.className = "text-sm font-extrabold text-rose-400 tracking-wide";
+            } else {
+                // Sudah Dicek -> Munculkan kontainer Action Buttons (Download & Salin Teks)
                 actionButtons.classList.remove('hidden'); 
                 actionButtons.classList.add('flex');
-            } else {
-                outs.statusContainer.className = "p-4 rounded-2xl bg-amber-900/30 border border-amber-500/40 backdrop-blur-sm relative z-10 transition-all duration-300";
-                outs.statusText.innerText = "⚠️ LEBIH BAYAR";
-                outs.statusText.className = "text-sm font-extrabold text-amber-400 tracking-wide";
+
+                if (Math.abs(selisih) <= 100) { 
+                    outs.statusContainer.className = "p-4 rounded-2xl bg-emerald-900/30 border border-emerald-500/40 backdrop-blur-sm relative z-10 transition-all duration-300";
+                    outs.statusText.innerText = "✅ COCOK (SESUAI)";
+                    outs.statusText.className = "text-sm font-extrabold text-emerald-400 tracking-wide";
+                    outs.selisih.innerText = "Rp 0";
+                    
+                    btnWa.classList.add('hidden'); 
+                    btnWa.classList.remove('flex');
+                } else if (selisih > 0) {
+                    outs.statusContainer.className = "p-4 rounded-2xl bg-rose-900/30 border border-rose-500/40 backdrop-blur-sm relative z-10 transition-all duration-300";
+                    outs.statusText.innerText = "⚠️ KURANG BAYAR";
+                    outs.statusText.className = "text-sm font-extrabold text-rose-400 tracking-wide";
+                    
+                    // Kalau kurang bayar, munculkan tombol WA
+                    btnWa.classList.remove('hidden'); 
+                    btnWa.classList.add('flex');
+                } else {
+                    outs.statusContainer.className = "p-4 rounded-2xl bg-amber-900/30 border border-amber-500/40 backdrop-blur-sm relative z-10 transition-all duration-300";
+                    outs.statusText.innerText = "⚠️ LEBIH BAYAR";
+                    outs.statusText.className = "text-sm font-extrabold text-amber-400 tracking-wide";
+                    
+                    btnWa.classList.add('hidden'); 
+                    btnWa.classList.remove('flex');
+                }
             }
         }
 
         function requestReset() {
-            if(confirm('Hapus seluruh data isian dan kunci kembali layar?')) {
+            if(confirm('Kunci kembali layar dan bersihkan data lembur bulan ini?')) {
                 silentClearData();
                 lockAppAgain();
             }
         }
 
-        calculate();
+        // Panggil lockAppAgain secara manual di awal agar overflow-hidden ditambahkan secara dinamis
+        window.addEventListener('DOMContentLoaded', () => {
+            loadBaseData();
+            lockAppAgain();
+            captureState(); // Rekam state kosong pertama kali untuk undo
+        });
 
     </script>
 </body>
